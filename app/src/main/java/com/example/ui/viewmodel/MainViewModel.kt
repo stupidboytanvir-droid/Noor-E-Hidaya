@@ -453,10 +453,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val targetLang = com.example.data.util.LocaleHelper.normalizeLanguage(_uiLanguage.value)
         val dateKey = todayDateKey
         val currentState = _dailyNasihahState.value
-        val alreadyReadyForToday = currentState is DailyNasihahUiState.Ready &&
+        val alreadyAiReadyForToday = currentState is DailyNasihahUiState.Ready &&
+            currentState.nasihah.isAiGenerated &&
             currentState.nasihah.dateKey == dateKey &&
             com.example.data.util.SupportedLanguage.normalizeCode(currentState.nasihah.languageCode) == targetLang
-        if (!alreadyReadyForToday) {
+        if (!alreadyAiReadyForToday) {
             refreshDailyNasihah(forceRefresh = false, languageOverride = targetLang)
         }
     }
@@ -493,7 +494,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 DailyNasihahUiState.Loading
             }
 
-            val backoffMs = listOf(2_000L, 5_000L, 12_000L)
+            val backoffMs = listOf(1_500L)
             try {
                 var attempt = 0
                 while (attempt <= backoffMs.size && isActive) {
@@ -518,13 +519,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     attempt++
                 }
-                // After retries, keep cached Ready if available or stay in Loading until connectivity restores (no Retry button needed)
+                // Never leave user stuck in endless loading spinner; surface cached or authentic Hadith-based fallback
                 val fallback = DailyNasihahCache.getLatestForLanguage(appContext, targetLang)
-                if (fallback != null) {
-                    _dailyNasihahState.value = DailyNasihahUiState.Ready(fallback)
-                } else {
-                    _dailyNasihahState.value = DailyNasihahUiState.Loading
-                }
+                    ?: geminiAssistant.buildAuthenticFallbackNasihah(appContext, targetLang, dateKey)
+                _dailyNasihahState.value = DailyNasihahUiState.Ready(fallback)
             } finally {
                 if (activeNasihahKey == requestKey) {
                     activeNasihahKey = null

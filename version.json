@@ -1,0 +1,6 @@
+{
+  "versionCode": 3,
+  "versionName": "1.2",
+  "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/raw/main/app-debug.apk",
+  "releaseNotes": "v1.2: Fixed Believer's AI Nasihah instant loading & fallback, enforced 100% male audio voices across all features, fixed Firebase App Check on physical devices, and added automatic app update notifications with direct APK download."
+}

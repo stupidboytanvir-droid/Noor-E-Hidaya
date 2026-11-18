@@ -19,10 +19,27 @@ import com.example.ui.theme.ObsidianBackground
 import com.example.ui.viewmodel.*
 
 import android.content.Context
+import android.content.Intent
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import com.example.data.security.configureAppCheck
+import com.example.data.update.AppUpdateCheckWorker
+import com.example.data.update.InAppUpdateManager
 import com.example.data.util.LocaleHelper
 import com.example.ui.theme.LocalAppLanguage
 import com.example.ui.theme.LocalContentLanguage
+import com.example.ui.theme.localizedText
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -33,6 +50,10 @@ class MainActivity : ComponentActivity() {
     private val moreViewModel: MoreViewModel by viewModels()
     private val authViewModel: AuthViewModel by viewModels()
 
+    private val appUpdateManager: InAppUpdateManager by lazy {
+        InAppUpdateManager(this)
+    }
+
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.wrapContext(newBase))
     }
@@ -42,22 +63,31 @@ class MainActivity : ComponentActivity() {
         configureAppCheck(this, intent)
         enableEdgeToEdge()
 
-        // Create high-importance notification channel for prayer alerts
+        // Create high-importance notification channels for prayer & app update alerts
         com.example.data.notification.PrayerNotificationWorker.createNotificationChannel(this)
+        InAppUpdateManager.createUpdateNotificationChannel(this)
 
         // Runtime App Integrity & Anti-Tampering verification
         val securityReport = com.example.data.security.SecurityGuard.getSecurityReport(this)
         android.util.Log.i("MainActivity", "App Integrity: ${securityReport.environmentSummary}")
 
-        // Check for Google Play In-App Updates in background
-        try {
-            val updateManager = com.example.data.update.InAppUpdateManager(this)
-            updateManager.checkForUpdates { isAvailable ->
-                if (isAvailable) {
-                    updateManager.startUpdate(this, immediate = false)
-                }
+        // If user launched app by tapping an update notification, start APK download immediately
+        handleUpdateNotificationIntent(intent)
+
+        // Schedule 6-hour background GitHub update checks and run immediate startup check
+        AppUpdateCheckWorker.schedulePeriodicCheck(this)
+        lifecycleScope.launch {
+            val githubUpdate = appUpdateManager.checkGitHubUpdates(notifyUser = true)
+            if (githubUpdate == null) {
+                try {
+                    appUpdateManager.checkForUpdates { isAvailable ->
+                        if (isAvailable) {
+                            appUpdateManager.startUpdate(this@MainActivity, immediate = false)
+                        }
+                    }
+                } catch (_: Exception) {}
             }
-        } catch (_: Exception) {}
+        }
 
         setContent {
             val themeStyleId by mainViewModel.themeStyle.collectAsState()
@@ -149,10 +179,119 @@ class MainActivity : ComponentActivity() {
                             authViewModel = authViewModel,
                             onOpenAuth = { showAuthScreen = true }
                         )
+
+                        val updateUiState by appUpdateManager.updateState.collectAsState()
+                        var dismissedUpdateDialog by remember { mutableStateOf(false) }
+                        val githubUpdateInfo = (updateUiState as? InAppUpdateManager.UpdateUiState.AvailableGitHub)?.info
+                        if (githubUpdateInfo != null && !dismissedUpdateDialog) {
+                            AlertDialog(
+                                onDismissRequest = { dismissedUpdateDialog = true },
+                                modifier = Modifier.testTag("github_update_dialog"),
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                                textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                icon = {
+                                    Icon(
+                                        imageVector = Icons.Filled.SystemUpdate,
+                                        contentDescription = localizedText(
+                                            uiLanguage,
+                                            "নতুন অ্যাপ আপডেট",
+                                            "New App Update"
+                                        ),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                },
+                                title = {
+                                    Text(
+                                        text = localizedText(
+                                            uiLanguage,
+                                            "নতুন আপডেট পাওয়া গেছে (v${githubUpdateInfo.versionName})",
+                                            "New Update Available (v${githubUpdateInfo.versionName})"
+                                        ),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                },
+                                text = {
+                                    val summary = githubUpdateInfo.releaseNotes.take(260).ifBlank {
+                                        localizedText(
+                                            uiLanguage,
+                                            "নতুন বাগ ফিক্স এবং উন্নত অভিজ্ঞতা সহ নতুন APK সংস্করণ প্রস্তুত। নিচের বাটনে ট্যাপ করে সরাসরি ডাউনলোড করুন।",
+                                            "A new APK version with bug fixes and improvements is ready. Tap below to download directly."
+                                        )
+                                    }
+                                    Text(text = summary)
+                                },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            dismissedUpdateDialog = true
+                                            InAppUpdateManager.downloadApkDirectly(
+                                                context = this@MainActivity,
+                                                downloadUrl = githubUpdateInfo.apkDownloadUrl,
+                                                versionName = githubUpdateInfo.versionName
+                                            )
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primary,
+                                            contentColor = MaterialTheme.colorScheme.onPrimary
+                                        ),
+                                        modifier = Modifier
+                                            .defaultMinSize(minHeight = 48.dp)
+                                            .testTag("github_update_download_button")
+                                    ) {
+                                        Text(
+                                            text = localizedText(
+                                                uiLanguage,
+                                                "ডাউনলোড করুন",
+                                                "Download APK"
+                                            )
+                                        )
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(
+                                        onClick = { dismissedUpdateDialog = true },
+                                        modifier = Modifier
+                                            .defaultMinSize(minHeight = 48.dp)
+                                            .testTag("github_update_later_button")
+                                    ) {
+                                        Text(
+                                            text = localizedText(uiLanguage, "পরে", "Later"),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleUpdateNotificationIntent(intent)
+    }
+
+    private fun handleUpdateNotificationIntent(intent: Intent?) {
+        val downloadUrl = intent?.getStringExtra(InAppUpdateManager.EXTRA_UPDATE_DOWNLOAD_URL)
+        if (!downloadUrl.isNullOrBlank()) {
+            val versionName = intent.getStringExtra(InAppUpdateManager.EXTRA_UPDATE_VERSION_NAME).orEmpty()
+            intent.removeExtra(InAppUpdateManager.EXTRA_UPDATE_DOWNLOAD_URL)
+            intent.removeExtra(InAppUpdateManager.EXTRA_UPDATE_VERSION_NAME)
+            InAppUpdateManager.downloadApkDirectly(
+                context = this,
+                downloadUrl = downloadUrl,
+                versionName = versionName
+            )
+        }
+    }
+
+    override fun onDestroy() {
+        appUpdateManager.unregister()
+        super.onDestroy()
     }
 }
 

@@ -205,6 +205,7 @@ fun MoreScreen(
 
     val updateManager = remember { InAppUpdateManager(context) }
     val updateState by updateManager.updateState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -666,27 +667,56 @@ fun MoreScreen(
 
                     HorizontalDivider(color = HairlineBorder.copy(alpha = 0.4f), thickness = 0.5.dp)
 
-                    val updateLabel = when (updateState) {
+                    val updateLabel = when (val state = updateState) {
                         is InAppUpdateManager.UpdateUiState.Checking -> uiText("পরীক্ষা হচ্ছে...", "Checking...")
+                        is InAppUpdateManager.UpdateUiState.AvailableGitHub -> uiText(
+                            "আপডেট (v${state.info.versionName})",
+                            "Update (v${state.info.versionName})"
+                        )
                         is InAppUpdateManager.UpdateUiState.Available -> uiText("নতুন আপডেট!", "Update Available!")
                         is InAppUpdateManager.UpdateUiState.Downloaded -> uiText("ইনস্টল করুন", "Install Update")
                         else -> uiText("সর্বশেষ সংস্করণ", "Up to Date")
                     }
-                    val availToast = uiText("নতুন আপডেট উপলভ্য রয়েছে!", "A new update is available!")
+                    val availToast = uiText("নতুন আপডেট পাওয়া গেছে! ডাউনলোড শুরু হচ্ছে...", "Update available! Starting download...")
                     val latestToast = uiText("আপনি অ্যাপের সর্বশেষ সংস্করণ ব্যবহার করছেন।", "You are using the latest version of the app.")
                     SettingsNavigationRow(
                         icon = Icons.Default.SystemUpdate,
                         title = uiText("নতুন আপডেট পরীক্ষা করুন", "Check for App Updates"),
-                        subtitle = uiText("গুগল প্লে স্টোর ইন-অ্যাপ আপডেট", "Google Play Store in-app updates"),
+                        subtitle = uiText("স্বয়ংক্রিয় ভার্সন ও বাগ-ফিক্স আপডেট", "Automatic version & bug-fix updates"),
                         trailingValue = updateLabel,
-                        trailingColor = if (updateState is InAppUpdateManager.UpdateUiState.Available) ChampagneGold else SlateGrayMuted,
+                        trailingColor = if (
+                            updateState is InAppUpdateManager.UpdateUiState.Available ||
+                            updateState is InAppUpdateManager.UpdateUiState.AvailableGitHub
+                        ) ChampagneGold else SlateGrayMuted,
                         onClick = {
-                            if (updateState is InAppUpdateManager.UpdateUiState.Downloaded) {
-                                updateManager.completeUpdate()
-                            } else {
-                                updateManager.checkForUpdates { hasUpdate ->
-                                    val msg = if (hasUpdate) availToast else latestToast
-                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                            when (val state = updateState) {
+                                is InAppUpdateManager.UpdateUiState.Downloaded -> {
+                                    updateManager.completeUpdate()
+                                }
+                                is InAppUpdateManager.UpdateUiState.AvailableGitHub -> {
+                                    InAppUpdateManager.downloadApkDirectly(
+                                        context = context,
+                                        downloadUrl = state.info.apkDownloadUrl,
+                                        versionName = state.info.versionName
+                                    )
+                                }
+                                else -> {
+                                    coroutineScope.launch {
+                                        val ghUpdate = updateManager.checkGitHubUpdates(notifyUser = true)
+                                        if (ghUpdate != null) {
+                                            Toast.makeText(context, availToast, Toast.LENGTH_SHORT).show()
+                                            InAppUpdateManager.downloadApkDirectly(
+                                                context = context,
+                                                downloadUrl = ghUpdate.apkDownloadUrl,
+                                                versionName = ghUpdate.versionName
+                                            )
+                                        } else {
+                                            updateManager.checkForUpdates { hasUpdate ->
+                                                val msg = if (hasUpdate) availToast else latestToast
+                                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -23,21 +23,21 @@ enum class ArabicVoiceTone(
         id = "soulful",
         titleBengali = "সুললিত ও প্রশান্ত কণ্ঠ",
         descriptionBengali = "কোমল, সুমধুর ও হৃদয়গ্রাহী পুরুষ তিলাওয়াত",
-        pitch = 0.94f,
+        pitch = 0.88f,
         speechRate = 0.80f
     ),
     DEEP_REVERENT(
         id = "reverent",
         titleBengali = "গম্ভীর ও অনুধ্যানী কণ্ঠ",
         descriptionBengali = "ধীরস্থির, গম্ভীর ও ভক্তিপূর্ণ গাম্ভীর্য",
-        pitch = 0.89f,
+        pitch = 0.82f,
         speechRate = 0.77f
     ),
     CLEAR_TAJWEED(
         id = "tajweed",
         titleBengali = "ধীর ও স্পষ্ট তালিম",
         descriptionBengali = "মাখরাজ ও হারাকাত শেখার স্পষ্ট উচ্চারণ",
-        pitch = 0.97f,
+        pitch = 0.90f,
         speechRate = 0.73f
     )
 }
@@ -49,7 +49,7 @@ data class ArabicTtsState(
     val maleVoiceName: String = "সুললিত পুরুষ কণ্ঠ (Arabic Male)",
     val selectedTone: ArabicVoiceTone = ArabicVoiceTone.SOULFUL_MELODIOUS,
     val speechRate: Float = 0.80f,
-    val pitch: Float = 0.94f,
+    val pitch: Float = 0.88f,
     val availableVoicesCount: Int = 0,
     val isNeuralVoice: Boolean = false,
     val errorMessage: String? = null,
@@ -65,6 +65,10 @@ data class ArabicTtsState(
 class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListener {
 
     private var tts: TextToSpeech? = null
+    private var pendingSpeakText: String? = null
+    private var pendingSpeakSpeed: Float = 0.80f
+    private var onSpeakCompleted: (() -> Unit)? = null
+    private var hasVerifiedMaleVoice: Boolean = false
 
     private val _state = MutableStateFlow(ArabicTtsState())
     val state: StateFlow<ArabicTtsState> = _state.asStateFlow()
@@ -137,19 +141,17 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
             if (!voices.isNullOrEmpty()) {
                 val arabicVoices = voices.filter { it.locale.language == "ar" }
 
-                // Filter out any voices with female indicators
+                // Filter out ALL female voice signatures (including Google TTS -arc-/-ard- female IDs and voice features)
                 val nonFemaleVoices = arabicVoices.filter { voice ->
-                    val nameLower = voice.name.lowercase()
-                    !nameLower.contains("female") &&
-                            !nameLower.contains("woman") &&
-                            !nameLower.contains("girl") &&
-                            !nameLower.contains("fem")
+                    !isKnownFemaleVoice(voice)
                 }
 
-                maleCount = nonFemaleVoices.size
+                val confirmedMaleVoices = nonFemaleVoices.filter { isKnownMaleVoiceName(it.name) }
+                val candidatePool = if (confirmedMaleVoices.isNotEmpty()) confirmedMaleVoices else nonFemaleVoices
+                maleCount = candidatePool.size
 
-                // Score candidates to pick the smoothest, most natural neural male voice
-                bestMaleVoice = nonFemaleVoices.maxByOrNull { rateVoiceQuality(it) }
+                bestMaleVoice = candidatePool.maxByOrNull { rateVoiceQuality(it) }
+                hasVerifiedMaleVoice = bestMaleVoice != null && isKnownMaleVoiceName(bestMaleVoice.name)
 
                 if (bestMaleVoice != null) {
                     val nameLower = bestMaleVoice.name.lowercase()
@@ -161,7 +163,7 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
                 }
             }
         } catch (_: Exception) {
-            // In case voices API is restricted, rely on pitch & cadence tuning
+            // In case voices API is restricted, rely on deep masculine pitch tuning
         }
 
         if (bestMaleVoice != null) {
@@ -170,9 +172,10 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
             } catch (_: Exception) {}
         }
 
-        // 4. Apply Initial Melodious Acoustic Tuning
+        // 4. Apply Strictly Masculine Acoustic Tuning
         val currentTone = _state.value.selectedTone
-        engine.setPitch(currentTone.pitch)
+        val effectivePitch = if (hasVerifiedMaleVoice) currentTone.pitch else currentTone.pitch.coerceAtMost(0.80f)
+        engine.setPitch(effectivePitch)
         engine.setSpeechRate(currentTone.speechRate)
 
         // 5. Utterance Progress Listener
@@ -186,6 +189,7 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
 
             override fun onDone(utteranceId: String?) {
                 _state.value = _state.value.copy(isSpeaking = false)
+                onSpeakCompleted?.invoke()
             }
 
             @Deprecated("Deprecated in Java")
@@ -194,6 +198,7 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
                     isSpeaking = false,
                     errorMessage = "উচ্চারণ বাজাতে ত্রুটি ঘটেছে"
                 )
+                onSpeakCompleted?.invoke()
             }
 
             override fun onError(utteranceId: String?, errorCode: Int) {
@@ -201,6 +206,7 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
                     isSpeaking = false,
                     errorMessage = "উচ্চারণ ত্রুটি কোড: $errorCode"
                 )
+                onSpeakCompleted?.invoke()
             }
         })
 
@@ -216,15 +222,67 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
             maleVoiceName = displayVoiceName,
             availableVoicesCount = maleCount,
             isNeuralVoice = isNeural,
-            pitch = currentTone.pitch,
+            pitch = effectivePitch,
             speechRate = currentTone.speechRate,
             errorMessage = null
         )
+
+        // Flush any speech queued while TTS engine was still binding
+        val queuedText = pendingSpeakText
+        val queuedSpeed = pendingSpeakSpeed
+        pendingSpeakText = null
+        if (!queuedText.isNullOrBlank()) {
+            speakArabic(queuedText, queuedSpeed, onSpeakCompleted)
+        }
+    }
+
+    private fun isKnownFemaleVoice(voice: Voice): Boolean {
+        if (isKnownFemaleVoiceName(voice.name)) return true
+        return try {
+            voice.features?.any { feature ->
+                feature.contains("female", ignoreCase = true) ||
+                    feature.contains("woman", ignoreCase = true) ||
+                    feature.contains("girl", ignoreCase = true)
+            } == true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    companion object {
+        internal fun isKnownFemaleVoiceName(voiceName: String): Boolean {
+            val lower = voiceName.lowercase()
+            val femaleMarkers = listOf(
+                "female", "woman", "girl", "fem", "#female",
+                "-f-", "_f_", "-arc-", "-ard-", "x-arc", "x-ard",
+                "wavenet-a", "wavenet-d", "standard-a", "standard-d",
+                "neural2-a", "neural2-d", "chirp-hd-f", "chirp3-hd-aoede",
+                "laila", "salma", "rana", "zaynab", "amina", "fatima",
+                "mariam", "noura", "hana", "zeina", "sara"
+            )
+            return femaleMarkers.any { lower.contains(it) }
+        }
+
+        internal fun isKnownMaleVoiceName(voiceName: String): Boolean {
+            val lower = voiceName.lowercase()
+            val maleMarkers = listOf(
+                "male", "masculine", "#male",
+                "-m-", "_m_", "-are-", "-arz-", "x-are", "x-arz",
+                "wavenet-b", "wavenet-c", "standard-b", "standard-c",
+                "neural2-b", "neural2-c", "chirp-hd-m",
+                "hamed", "tarik", "maged", "naayf", "bassel", "shakir", "omar", "zaid", "hamdan"
+            )
+            return maleMarkers.any { lower.contains(it) }
+        }
     }
 
     private fun rateVoiceQuality(voice: Voice): Int {
         val name = voice.name.lowercase()
         var score = 100
+
+        // Strongly prefer verified male Arabic voice IDs
+        if (isKnownMaleVoiceName(name)) score += 800
+        if (isKnownFemaleVoiceName(name)) score -= 5000
 
         // Prioritize High/Very High quality
         if (voice.quality == Voice.QUALITY_VERY_HIGH) score += 500
@@ -235,11 +293,6 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
         if (name.contains("neural")) score += 450
         if (name.contains("premium")) score += 350
         if (name.contains("network")) score += 250
-
-        // Look for male tags or known male voice indicators
-        if (name.contains("male") || name.contains("masculine")) score += 300
-        if (name.contains("-ard-") || name.contains("-arc-") || name.contains("#male") ||
-            name.contains("-ar-sa-x-a") || name.contains("-ar-sa-x-b")) score += 250
 
         // Prioritize Saudi accent for authentic Tajweed
         if (voice.locale.country.equals("SA", ignoreCase = true)) score += 150
@@ -252,25 +305,41 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
     }
 
     /**
-     * Synthesizes and recites the given Arabic text with soulful male intonation.
+     * Synthesizes and recites the given Arabic text with strictly male intonation.
      * Pre-processes Arabic text with breath pauses at punctuation and DAC pre-roll.
      */
-    fun speakArabic(text: String, speed: Float = _state.value.speechRate): Boolean {
+    fun speakArabic(
+        text: String,
+        speed: Float = _state.value.speechRate,
+        onCompleted: (() -> Unit)? = null
+    ): Boolean {
         val trimmed = text.trim()
         if (trimmed.isBlank()) {
             _state.value = _state.value.copy(errorMessage = "অনুগ্রহ করে কোনো আরবি টেক্সট বা দু'আ লিখুন")
             return false
         }
 
+        if (onCompleted != null) {
+            onSpeakCompleted = onCompleted
+        }
+
         val engine = tts
         if (engine == null || !_state.value.isInitialized) {
+            if (_state.value.isAvailable && engine != null) {
+                // Queue utterance until onInit completes
+                pendingSpeakText = trimmed
+                pendingSpeakSpeed = speed
+                _state.value = _state.value.copy(isSpeaking = true, errorMessage = null)
+                return true
+            }
             _state.value = _state.value.copy(errorMessage = "টিটিএস ইঞ্জিন এখনও প্রস্তুত নয়")
             return false
         }
 
-        // Apply acoustic pitch & rate
+        // Apply strictly masculine pitch & rate
+        val safePitch = if (hasVerifiedMaleVoice) _state.value.pitch else _state.value.pitch.coerceAtMost(0.80f)
         engine.setSpeechRate(speed)
-        engine.setPitch(_state.value.pitch)
+        engine.setPitch(safePitch)
 
         // Pre-process text for natural Tajweed breath pauses and DAC anti-clip
         val soulfulText = prepareSoulfulArabicText(trimmed)
@@ -351,6 +420,8 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
     }
 
     fun stop() {
+        pendingSpeakText = null
+        onSpeakCompleted = null
         try {
             tts?.stop()
         } catch (_: Exception) {}

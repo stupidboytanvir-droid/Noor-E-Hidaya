@@ -262,7 +262,8 @@ class AuthRepository(
                     authErrCode == "ERROR_MISSING_CLIENT_IDENTIFIER" ||
                     msg.contains("app is not authorized", ignoreCase = true) ||
                     msg.contains("Play Integrity", ignoreCase = true) ||
-                    msg.contains("reCAPTCHA", ignoreCase = true)
+                    msg.contains("reCAPTCHA", ignoreCase = true) ||
+                    msg.contains("App Check", ignoreCase = true)
 
                 if (isOpNotAllowed || isConfigOrIntegrityIssue) {
                     Log.w(TAG, "Phone OTP unavailable ($authErrCode): $msg")
@@ -421,7 +422,21 @@ class AuthRepository(
         scope.launch {
             try {
                 val credentialManager = CredentialManager.create(activity)
-                val serverClientId = activity.getString(R.string.default_web_client_id)
+                @Suppress("DiscouragedApi")
+                val clientIdResId = activity.resources.getIdentifier(
+                    "default_web_client_id",
+                    "string",
+                    activity.packageName
+                )
+                val serverClientId = if (clientIdResId != 0) {
+                    activity.getString(clientIdResId)
+                } else {
+                    ""
+                }
+                if (serverClientId.isBlank()) {
+                    _authState.value = AuthState.Error("গুগল সাইন ইন কনফিগারেশন (google-services.json) পাওয়া যায়নি।")
+                    return@launch
+                }
                 val googleOption = GetSignInWithGoogleOption.Builder(serverClientId)
                     .build()
                 val request = GetCredentialRequest.Builder()
@@ -486,9 +501,14 @@ class AuthRepository(
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Google Sign-In failed: ${e.message}", e)
-                _authState.value = AuthState.Error(
-                    "গুগল দিয়ে সাইন ইন করতে সমস্যা হয়েছে: ${e.localizedMessage ?: "ইন্টারনেট সংযোগ চেক করুন"}"
-                )
+                val errMsg = e.message.orEmpty()
+                val friendlyMsg = when {
+                    errMsg.contains("App Check", ignoreCase = true) ->
+                        "নিরাপত্তা যাচাই (App Check) সম্পন্ন করা যায়নি। ফোনের তারিখ ও সময় (Automatic Date & Time) এবং ইন্টারনেট ঠিক আছে কিনা দেখে আবার চেষ্টা করুন।"
+                    else ->
+                        "গুগল দিয়ে সাইন ইন করতে সমস্যা হয়েছে: ${e.localizedMessage ?: "ইন্টারনেট সংযোগ চেক করুন"}"
+                }
+                _authState.value = AuthState.Error(friendlyMsg)
             }
         }
     }

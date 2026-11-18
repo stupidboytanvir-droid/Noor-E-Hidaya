@@ -74,6 +74,8 @@ class AudioPlayerManager private constructor(context: Context) {
     private var activeFallbackQueue: ArrayDeque<String> = ArrayDeque()
     private var activeFallbackArabicText: String? = null
     private var activeTtsManager: ArabicTtsManager? = null
+    private val defaultTtsManager: ArabicTtsManager by lazy { ArabicTtsManager(appContext) }
+    private var isPlayingViaTts: Boolean = false
 
     var onPlaybackCompleted: (() -> Unit)? = null
     var onTrackChanged: ((Int) -> Unit)? = null
@@ -223,16 +225,20 @@ class AudioPlayerManager private constructor(context: Context) {
                 }
             }
 
-            // 2. Fallback to device Arabic TTS for Du'a / custom pronunciation text if offline or stream failed
+            // 2. Fallback to strictly-male Arabic TTS for Du'a / custom pronunciation text
             val fallbackArabic = activeFallbackArabicText
-            val tts = activeTtsManager
-            if (!fallbackArabic.isNullOrBlank() && tts != null && tts.state.value.isInitialized &&
-                !tts.state.value.requiresLanguageData
-            ) {
-                val spoke = tts.speakArabic(fallbackArabic, _playbackState.value.speed.coerceIn(0.6f, 1.4f))
+            val tts = activeTtsManager ?: defaultTtsManager
+            if (!fallbackArabic.isNullOrBlank()) {
+                val spoke = tts.speakArabic(fallbackArabic, _playbackState.value.speed.coerceIn(0.6f, 1.4f)) {
+                    isPlayingViaTts = false
+                    val cb = onPlaybackCompleted
+                    _playbackState.value = _playbackState.value.copy(isPlaying = false, isBuffering = false)
+                    cb?.invoke()
+                }
                 if (spoke) {
+                    isPlayingViaTts = true
                     _playbackState.value = _playbackState.value.copy(
-                        isPlaying = false,
+                        isPlaying = true,
                         isBuffering = false,
                         error = null
                     )
@@ -313,6 +319,12 @@ class AudioPlayerManager private constructor(context: Context) {
             return
         }
 
+        // Stop any active male TTS before starting MP3 stream
+        if (isPlayingViaTts) {
+            isPlayingViaTts = false
+            (activeTtsManager ?: defaultTtsManager).stop()
+        }
+
         // Toggle if already loaded on this exact URL
         if (_playbackState.value.currentUrl == url && currentTracks.size == 1 && controller != null) {
             togglePlayPause()
@@ -324,7 +336,7 @@ class AudioPlayerManager private constructor(context: Context) {
         onTrackChanged = null
         activeFallbackQueue = ArrayDeque(fallbackUrls.filter { it.isNotBlank() && it != url })
         activeFallbackArabicText = fallbackArabicText
-        activeTtsManager = ttsManager
+        activeTtsManager = ttsManager ?: defaultTtsManager
 
         val track = AudioTrackItem(
             url = url,
@@ -361,17 +373,10 @@ class AudioPlayerManager private constructor(context: Context) {
     }
 
     /**
-     * Builds primary & fallback Google Arabic TTS MP3 URLs for a text string (short single utterance).
+     * Removed female Google Translate TTS endpoint.
+     * Non-Quranic Arabic text now routes exclusively through the strictly-male ArabicTtsManager.
      */
-    fun buildArabicTtsUrls(arabicText: String): Pair<String, List<String>> {
-        val cleaned = extractSpeakableArabicOrClean(arabicText)
-        val snippet = chunkSpeechText(cleaned, maxLength = 180).firstOrNull().orEmpty()
-        if (snippet.isBlank()) return "" to emptyList()
-        val encoded = Uri.encode(snippet)
-        val primary = "https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=$encoded"
-        val backup = "https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ar&client=gtx&q=$encoded"
-        return primary to listOf(backup)
-    }
+    fun buildArabicTtsUrls(arabicText: String): Pair<String, List<String>> = "" to emptyList()
 
     /**
      * Enqueues a full playlist into ExoPlayer for seamless gapless playback (no per-Ayah delay).
@@ -424,9 +429,8 @@ class AudioPlayerManager private constructor(context: Context) {
     }
 
     /**
-     * Plays Arabic text (Du'as, Ayahs, or custom Arabic input) reliably:
-     * Uses on-device neural Arabic TTS when available and preferred; otherwise splits long text
-     * into <=180 char chunks queued seamlessly in Media3 with automatic TTS fallback on error.
+     * Plays Arabic text (Du'as, Hadiths, or custom Arabic input) strictly using
+     * the male-only ArabicTtsManager (never female Google Translate TTS).
      */
     fun playArabicTextSpeech(
         text: String,
@@ -434,7 +438,7 @@ class AudioPlayerManager private constructor(context: Context) {
         subtitle: String = "",
         speed: Float = _playbackState.value.speed,
         ttsManager: ArabicTtsManager? = null,
-        preferOnline: Boolean = true,
+        @Suppress("UNUSED_PARAMETER") preferOnline: Boolean = false,
         onCompleted: (() -> Unit)? = null
     ) {
         val cleaned = extractSpeakableArabicOrClean(text)
@@ -448,68 +452,65 @@ class AudioPlayerManager private constructor(context: Context) {
             return
         }
 
-        if (!preferOnline && ttsManager != null && ttsManager.state.value.isInitialized &&
-            !ttsManager.state.value.requiresLanguageData
-        ) {
-            if (ttsManager.speakArabic(cleaned, speed.coerceIn(0.6f, 1.4f))) {
-                return
-            }
-        }
+        // Stop any running ExoPlayer audio first
+        try {
+            controller?.stop()
+            controller?.clearMediaItems()
+        } catch (_: Exception) {}
+        stopProgressTracker()
 
-        val chunks = chunkSpeechText(cleaned, maxLength = 175)
-        if (chunks.isEmpty()) return
-
-        val tracks = chunks.mapIndexed { idx, chunk ->
-            val encoded = Uri.encode(chunk)
-            val ttsUrl = "https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=$encoded"
-            val backupUrl = "https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ar&client=gtx&q=$encoded"
-            AudioTrackItem(
-                url = ttsUrl,
-                title = title,
-                subtitle = if (chunks.size > 1) "$subtitle (${idx + 1}/${chunks.size})" else subtitle,
-                mediaId = "tts_${title.hashCode()}_$idx",
-                fallbackUrls = listOf(backupUrl)
-            )
-        }
-
+        val resolvedTts = ttsManager ?: defaultTtsManager
+        activeTtsManager = resolvedTts
+        activeFallbackArabicText = cleaned
         onPlaybackCompleted = onCompleted
         onPlaylistCompleted = onCompleted
-        onTrackChanged = null
-        activeFallbackArabicText = cleaned
-        activeTtsManager = ttsManager
-        currentTracks = tracks
-        activeFallbackQueue = ArrayDeque(tracks.first().fallbackUrls)
+        currentTracks = emptyList()
+        val ttsMediaId = "tts_${title.hashCode()}"
 
-        _playbackState.value = _playbackState.value.copy(
-            isBuffering = true,
-            isPlaying = false,
-            currentTitle = title,
-            currentSubtitle = subtitle,
-            currentUrl = tracks.first().url,
-            currentMediaId = tracks.first().mediaId,
-            currentIndex = 0,
-            playlistSize = tracks.size,
-            hasNext = tracks.size > 1,
-            hasPrevious = false,
-            currentPositionMs = 0,
-            durationMs = 0,
-            speed = speed,
-            isRepeatOne = false,
-            error = null
-        )
+        val spoke = resolvedTts.speakArabic(
+            text = cleaned,
+            speed = speed.coerceIn(0.6f, 1.4f)
+        ) {
+            isPlayingViaTts = false
+            _playbackState.value = PlaybackState(speed = _playbackState.value.speed)
+            onCompleted?.invoke()
+        }
 
-        val mediaItems = tracks.map { buildMediaItem(it) }
-        withController { mc ->
-            mc.repeatMode = Player.REPEAT_MODE_OFF
-            mc.setPlaybackSpeed(speed.coerceIn(0.5f, 1.5f))
-            mc.setMediaItems(mediaItems, 0, 0L)
-            mc.prepare()
-            mc.playWhenReady = true
-            mc.play()
+        if (spoke) {
+            isPlayingViaTts = true
+            _playbackState.value = PlaybackState(
+                isPlaying = true,
+                isBuffering = false,
+                currentTitle = title,
+                currentSubtitle = subtitle.ifBlank { resolvedTts.state.value.maleVoiceName },
+                currentUrl = "",
+                currentMediaId = ttsMediaId,
+                currentIndex = 0,
+                playlistSize = 1,
+                hasNext = false,
+                hasPrevious = false,
+                speed = speed,
+                error = null
+            )
+        } else {
+            isPlayingViaTts = false
+            val ttsError = resolvedTts.state.value.errorMessage
+            _playbackState.value = _playbackState.value.copy(
+                isPlaying = false,
+                isBuffering = false,
+                error = ttsError ?: localizedError(
+                    "ডিভাইসে পুরুষ আরবি ভয়েস প্যাক প্রস্তুত নয়",
+                    "Male Arabic voice pack is not ready on this device"
+                )
+            )
         }
     }
 
     fun togglePlayPause() {
+        if (isPlayingViaTts) {
+            stop()
+            return
+        }
         val mc = controller
         if (mc == null) {
             val url = _playbackState.value.currentUrl
@@ -599,6 +600,12 @@ class AudioPlayerManager private constructor(context: Context) {
 
     fun stop() {
         stopProgressTracker()
+        if (isPlayingViaTts) {
+            isPlayingViaTts = false
+            try {
+                (activeTtsManager ?: defaultTtsManager).stop()
+            } catch (_: Exception) {}
+        }
         activeFallbackQueue.clear()
         activeFallbackArabicText = null
         currentTracks = emptyList()

@@ -144,7 +144,7 @@ class GeminiIslamicAssistant {
         private const val TAG = "GeminiIslamicAssistant"
         private const val CHAT_MODEL_NAME = "gemini-3.8-flash"
         private const val NASIHAH_MODEL_NAME = "gemini-3.8-flash"
-        private const val INFERENCE_TIMEOUT_MS = 45_000L
+        private const val INFERENCE_TIMEOUT_MS = 20_000L
     }
 
     private val chatModel by lazy {
@@ -290,5 +290,65 @@ class GeminiIslamicAssistant {
         )
         DailyNasihahCache.save(context, parsed)
         parsed
+    }
+
+    /**
+     * Dynamically constructs a verified, language-aware daily reflection from the app's
+     * authentic Hadith & Quran repository when live Gemini AI is unreachable or times out.
+     * Ensures the Believer's Nasihah card never hangs indefinitely in a Loading spinner.
+     */
+    fun buildAuthenticFallbackNasihah(
+        context: Context,
+        languageCode: String,
+        dateKey: String
+    ): DailyAiNasihah {
+        val normLang = SupportedLanguage.normalizeCode(languageCode)
+        val pool = com.example.data.model.HadithRepository.HADITHS
+        val dayIndex = kotlin.math.abs((dateKey.hashCode() + 31)) % pool.size
+        val hadith = pool[dayIndex]
+
+        val localizedTitle = if (normLang == "bn") hadith.title else {
+            val enTitle = hadith.titleEnglish.ifBlank { hadith.title }
+            com.example.ui.theme.LocalizationRegistry.translate(normLang, hadith.title, enTitle)
+        }
+        val localizedAdvice = if (normLang == "bn") {
+            hadith.explanationBengali.ifBlank { hadith.translationBengali }
+        } else {
+            val enAdvice = hadith.explanationEnglish.ifBlank { hadith.translationEnglish }
+            com.example.ui.theme.LocalizationRegistry.translate(
+                normLang,
+                hadith.explanationBengali.ifBlank { hadith.translationBengali },
+                enAdvice
+            )
+        }
+        val localizedRef = if (normLang == "bn") {
+            hadith.bookReference
+        } else {
+            val enRef = hadith.bookReferenceEnglish.ifBlank { hadith.bookReference }
+            com.example.ui.theme.LocalizationRegistry.translate(normLang, hadith.bookReference, enRef)
+        }
+        val categoryBadge = com.example.ui.theme.LocalizationRegistry.translate(
+            normLang,
+            "দৈনিক সুন্নাহ হিকমাহ",
+            "Daily Prophetic Wisdom"
+        )
+        val actionText = com.example.ui.theme.LocalizationRegistry.translate(
+            normLang,
+            "আজকের জীবনে এই হাদিসের শিক্ষা অনুযায়ী অন্তত একটি ভালো আমল করুন এবং আল্লাহর শুকরিয়া আদায় করুন।",
+            "Apply this Prophetic guidance in one sincere deed today and thank Allah."
+        )
+
+        return DailyAiNasihah(
+            dateKey = dateKey,
+            languageCode = normLang,
+            title = localizedTitle,
+            categoryLabel = categoryBadge,
+            arabicQuote = hadith.textArabic,
+            adviceText = localizedAdvice,
+            actionPoint = actionText,
+            reference = localizedRef,
+            isAiGenerated = false,
+            generatedAt = System.currentTimeMillis()
+        )
     }
 }
