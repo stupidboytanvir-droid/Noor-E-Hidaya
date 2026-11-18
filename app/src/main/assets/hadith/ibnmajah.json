@@ -1,0 +1,40 @@
+{
+  "bookId": "ibnmajah",
+  "nameBengali": "সুনান ইবনে মাজাহ",
+  "nameArabic": "سنن ابن ماجه",
+  "compiler": "ইমাম মুহাম্মদ ইবনে ইয়াজিদ ইবনে মাজাহ (রহ.)",
+  "totalHadithCount": "৪,৩৪১টি হাদিস",
+  "chapters": [
+    {
+      "chapterNumber": 1,
+      "nameBengali": "সুন্নাহর মর্যাদা ও আনুগত্য",
+      "nameArabic": "كتاب المقدمة",
+      "hadithRange": "১ - ২৬৬",
+      "hadithCount": 266,
+      "startPage": 1,
+      "endPage": 70
+    },
+    {
+      "chapterNumber": 12,
+      "nameBengali": "হালাল বাণিজ্য ও সততা",
+      "nameArabic": "كتاب التجارات",
+      "hadithRange": "২১৩৭ - ২৩১৭",
+      "hadithCount": 181,
+      "startPage": 71,
+      "endPage": 125
+    }
+  ],
+  "hadiths": [
+    {
+      "hadithNumber": "২২৪",
+      "hadithIndexInBook": 224,
+      "chapterNumber": 1,
+      "pageNumber": 1,
+      "narrator": "হযরত আনাস ইবনে মালিক (রা.)",
+      "arabicText": "طَلَبُ الْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ.",
+      "banglaText": "দ্বীনি জ্ঞান অন্বেষণ করা প্রত্যেক মুসলমানের ওপর একান্ত আবশ্যকীয় বা ফরজ।",
+      "explanation": "ইলম অর্জন ফরজ।",
+      "grade": "সহীহ"
+    }
+  ]
+}

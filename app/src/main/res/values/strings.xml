@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Noor-e-Hidayah</string>
+
+    <!-- Bottom Navigation Tabs -->
+    <string name="tab_home">Home</string>
+    <string name="tab_quran">Quran</string>
+    <string name="tab_dua">Dua</string>
+    <string name="tab_tools">Tools</string>
+    <string name="tab_more">More</string>
+
+    <!-- Common Actions -->
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_back">Back</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_customize">Customize</string>
+    <string name="action_search">Search</string>
+
+    <!-- Language Settings -->
+    <string name="settings_language_title">Language Settings</string>
+    <string name="settings_language_subtitle">App user interface &amp; translation language</string>
+    <string name="label_ui_language">App User Interface Language:</string>
+    <string name="label_content_language">Quran &amp; Dua Translation Language:</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_english">English</string>
+    <string name="content_lang_bangla">Bangla Meaning</string>
+    <string name="content_lang_english">English Meaning</string>
+    <string name="language_saved_toast">Language updated to English</string>
+</resources>

@@ -1,0 +1,40 @@
+{
+  "bookId": "nasai",
+  "nameBengali": "সুনান আন-নাসাঈ",
+  "nameArabic": "سنن النسائي",
+  "compiler": "ইমাম আহমাদ ইবনে শুআইব আন-নাসাঈ (রহ.)",
+  "totalHadithCount": "৫,৭৫৮টি হাদিস",
+  "chapters": [
+    {
+      "chapterNumber": 1,
+      "nameBengali": "পবিত্রতা ও মিসওয়াকের সুন্নত",
+      "nameArabic": "كتاب الطهارة",
+      "hadithRange": "১ - ৩২৫",
+      "hadithCount": 325,
+      "startPage": 1,
+      "endPage": 80
+    },
+    {
+      "chapterNumber": 5,
+      "nameBengali": "সালাত ও কিবলার আহকাম",
+      "nameArabic": "كتاب القبلة",
+      "hadithRange": "৭৪৩ - ৮৮৫",
+      "hadithCount": 143,
+      "startPage": 81,
+      "endPage": 140
+    }
+  ],
+  "hadiths": [
+    {
+      "hadithNumber": "৪৬২",
+      "hadithIndexInBook": 462,
+      "chapterNumber": 5,
+      "pageNumber": 81,
+      "narrator": "হযরত আবু হুরায়রা (রা.)",
+      "arabicText": "إِنَّ أَوَّلَ مَا يُحَاسَبُ بِهِ الْعَبْدُ يَوْمَ الْقِيَامَةِ مِنْ عَمَلِهِ صَلاَتُهُ...",
+      "banglaText": "কিয়ামতের দিন বান্দার আমলসমূহের মধ্যে সর্বাগ্রে যে বিষয়ের হিসাব নেওয়া হবে তা হলো সালাত...",
+      "explanation": "সালাত ইসলামের ভিত্তি।",
+      "grade": "সহীহ"
+    }
+  ]
+}

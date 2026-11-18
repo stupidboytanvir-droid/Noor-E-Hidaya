@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Noor-e-Hidayah</string>
+
+    <!-- Bottom Navigation Tabs -->
+    <string name="tab_home">হোম</string>
+    <string name="tab_quran">কুরআন</string>
+    <string name="tab_dua">দু\'আ</string>
+    <string name="tab_tools">টুলস</string>
+    <string name="tab_more">আরও</string>
+
+    <!-- Common Actions -->
+    <string name="action_save">সংরক্ষণ করুন</string>
+    <string name="action_cancel">বাতিল</string>
+    <string name="action_close">বন্ধ করুন</string>
+    <string name="action_back">ফিরে যান</string>
+    <string name="action_reset">রিসেট</string>
+    <string name="action_customize">কাস্টমাইজ</string>
+    <string name="action_search">অনুসন্ধান</string>
+
+    <!-- Language Settings -->
+    <string name="settings_language_title">ভাষা নির্ধারণ</string>
+    <string name="settings_language_subtitle">অ্যাপ ইউজার ইন্টারফেস ও অনুবাদ ভাষা</string>
+    <string name="label_ui_language">অ্যাপ ইউজার ইন্টারফেস ভাষা:</string>
+    <string name="label_content_language">কুরআন ও দু\'আ অনুবাদ ভাষা:</string>
+    <string name="lang_bangla">বাংলা</string>
+    <string name="lang_english">English</string>
+    <string name="content_lang_bangla">বাংলা অর্থ</string>
+    <string name="content_lang_english">English Meaning</string>
+    <string name="language_saved_toast">ভাষা বাংলায় পরিবর্তন করা হয়েছে</string>
+</resources>

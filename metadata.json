@@ -1,0 +1,6 @@
+{
+  "name": "Noor-e-Hidayah",
+  "description": "Elite Pro Islamic Companion with Prayer Times, Al-Quran, Duas, 3D Tasbeeh, Qibla Compass, and Mosque Mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

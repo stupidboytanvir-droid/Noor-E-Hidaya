@@ -1,0 +1,177 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Represents the user's account profile, sync metadata, and synced app preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "photoUrl": {
+          "type": "string",
+          "description": "Remote photo URL or compressed JPEG Base64 data URI"
+        },
+        "provider": { "type": "string" },
+        "quranReadMinutes": { "type": "integer" },
+        "duasReadCount": { "type": "integer" },
+        "totalTasbihCount": { "type": "integer" },
+        "salawatJumatCount": { "type": "integer" },
+        "hadithReadMinutes": { "type": "integer" },
+        "hadithReadCount": { "type": "integer" },
+        "prayerStreak": { "type": "integer" },
+        "lastSyncedAt": { "type": "integer" },
+        "settings": {
+          "type": "object",
+          "description": "Synchronized user preferences (uiLanguage, contentLanguage, selectedQariId, calculationMethod, juristicMethod, themeMode)"
+        }
+      },
+      "required": ["uid", "displayName"]
+    },
+    "CustomZikr": {
+      "title": "CustomZikr",
+      "description": "User-created custom Tasbeeh or Dhikr counter synced across devices",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "arabicPhrase": { "type": "string" },
+        "transliteration": { "type": "string" },
+        "bengaliMeaning": { "type": "string" },
+        "targetCount": { "type": "integer" },
+        "currentCount": { "type": "integer" },
+        "completedRounds": { "type": "integer" },
+        "totalHistoricalCount": { "type": "integer" },
+        "updatedAt": { "type": "integer" }
+      },
+      "required": ["id", "arabicPhrase", "targetCount"]
+    },
+    "QuranBookmark": {
+      "title": "QuranBookmark",
+      "description": "Saved Quran Ayah bookmark",
+      "type": "object",
+      "properties": {
+        "bookmarkId": { "type": "string" },
+        "surahNumber": { "type": "integer" },
+        "ayahNumber": { "type": "integer" },
+        "surahName": { "type": "string" },
+        "ayahText": { "type": "string" },
+        "timestamp": { "type": "integer" }
+      },
+      "required": ["bookmarkId", "surahNumber", "ayahNumber"]
+    },
+    "FavoriteDua": {
+      "title": "FavoriteDua",
+      "description": "User's favorite Hisnul Muslim Dua",
+      "type": "object",
+      "properties": {
+        "duaId": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "timestamp": { "type": "integer" }
+      },
+      "required": ["duaId", "title"]
+    },
+    "HadithBookmark": {
+      "title": "HadithBookmark",
+      "description": "User's bookmarked Hadith from Sahih collections",
+      "type": "object",
+      "properties": {
+        "hadithId": { "type": "string" },
+        "bookId": { "type": "string" },
+        "bookName": { "type": "string" },
+        "chapterName": { "type": "string" },
+        "hadithNumber": { "type": "string" },
+        "narrator": { "type": "string" },
+        "arabicText": { "type": "string" },
+        "banglaText": { "type": "string" },
+        "timestamp": { "type": "integer" }
+      },
+      "required": ["hadithId", "bookId", "hadithNumber"]
+    },
+    "DebtLedgerEntry": {
+      "title": "DebtLedgerEntry",
+      "description": "User's smart debt and loan ledger entry with optional proof attachment note/URI",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "personName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "amount": { "type": "number" },
+        "transactionDate": { "type": "integer" },
+        "dueDate": { "type": "integer" },
+        "notes": { "type": "string" },
+        "proofAttachmentUri": { "type": "string" },
+        "proofAttachmentType": { "type": "string" },
+        "proofAttachmentNote": { "type": "string" },
+        "isSettled": { "type": "boolean" },
+        "settledDate": { "type": "integer" },
+        "updatedAt": { "type": "integer" }
+      },
+      "required": ["id", "type", "personName", "amount"]
+    },
+    "AmalRecord": {
+      "title": "AmalRecord",
+      "description": "Daily 14-amal deeds record",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "completedAmals": { "type": "array", "items": { "type": "string" } },
+        "completedCount": { "type": "integer" },
+        "updatedAt": { "type": "integer" }
+      },
+      "required": ["date", "completedAmals"]
+    },
+    "MonthlyWorshipRecord": {
+      "title": "MonthlyWorshipRecord",
+      "description": "Archived monthly worship summary across all 5 categories",
+      "type": "object",
+      "properties": {
+        "yearMonth": { "type": "string" },
+        "quranMinutes": { "type": "integer" },
+        "duaCount": { "type": "integer" },
+        "tasbihCount": { "type": "integer" },
+        "duroodCount": { "type": "integer" },
+        "hadithMinutes": { "type": "integer" },
+        "hadithReadCount": { "type": "integer" },
+        "updatedAt": { "type": "integer" }
+      },
+      "required": ["yearMonth", "quranMinutes", "duaCount", "tasbihCount", "duroodCount", "hadithMinutes"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Root document for a user's profile, stats, avatar, and synced settings"
+    },
+    "/users/{userId}/customZikrs/{zikrId}": {
+      "schema": { "$ref": "#/entities/CustomZikr" },
+      "description": "User's synchronized custom Tasbeeh/Dhikr counters"
+    },
+    "/users/{userId}/bookmarks/{bookmarkId}": {
+      "schema": { "$ref": "#/entities/QuranBookmark" },
+      "description": "User's synchronized Quran bookmarks"
+    },
+    "/users/{userId}/favoriteDuas/{duaId}": {
+      "schema": { "$ref": "#/entities/FavoriteDua" },
+      "description": "User's synchronized favorite Duas"
+    },
+    "/users/{userId}/hadithBookmarks/{hadithId}": {
+      "schema": { "$ref": "#/entities/HadithBookmark" },
+      "description": "User's synchronized Hadith bookmarks"
+    },
+    "/users/{userId}/debtLedger/{debtId}": {
+      "schema": { "$ref": "#/entities/DebtLedgerEntry" },
+      "description": "User's synchronized debt and loan ledger records"
+    },
+    "/users/{userId}/amalRecords/{date}": {
+      "schema": { "$ref": "#/entities/AmalRecord" },
+      "description": "User's synchronized daily Amal records"
+    },
+    "/users/{userId}/monthlyHistory/{yearMonth}": {
+      "schema": { "$ref": "#/entities/MonthlyWorshipRecord" },
+      "description": "User's monthly worship totals for 12-month charts and archiving"
+    }
+  }
+}

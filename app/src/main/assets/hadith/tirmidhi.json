@@ -1,0 +1,69 @@
+{
+  "bookId": "tirmidhi",
+  "nameBengali": "জামে আত-তিরমিযী",
+  "nameArabic": "جامع الترمذي",
+  "compiler": "ইমাম আবু ঈসা মুহাম্মদ আত-তিরমিযী (রহ.)",
+  "totalHadithCount": "৩,৯৫৬টি হাদিস",
+  "chapters": [
+    {
+      "chapterNumber": 1,
+      "nameBengali": "পবিত্রতা ও ওযুর অধ্যায়",
+      "nameArabic": "أبواب الطهارة",
+      "hadithRange": "১ - ১৪৮",
+      "hadithCount": 148,
+      "startPage": 1,
+      "endPage": 50
+    },
+    {
+      "chapterNumber": 2,
+      "nameBengali": "সালাতের ওয়াক্ত ও রুকন",
+      "nameArabic": "أبواب الصلاة",
+      "hadithRange": "১৪৯ - ৪৫১",
+      "hadithCount": 303,
+      "startPage": 51,
+      "endPage": 130
+    },
+    {
+      "chapterNumber": 27,
+      "nameBengali": "সদাচার ও আত্মীয়তার হক",
+      "nameArabic": "أبواب البر والصلة",
+      "hadithRange": "১৮৯৭ - ২০৩২",
+      "hadithCount": 136,
+      "startPage": 131,
+      "endPage": 185
+    },
+    {
+      "chapterNumber": 48,
+      "nameBengali": "রাসূল (সাঃ)-এর প্রিয় দুআসমূহ",
+      "nameArabic": "أبواب الدعوات",
+      "hadithRange": "৩৩৭৩ - ৩৬০৪",
+      "hadithCount": 232,
+      "startPage": 186,
+      "endPage": 250
+    }
+  ],
+  "hadiths": [
+    {
+      "hadithNumber": "১১৬২",
+      "hadithIndexInBook": 1162,
+      "chapterNumber": 27,
+      "pageNumber": 131,
+      "narrator": "হযরত আবু হুরায়রা (রা.)",
+      "arabicText": "أَكْمَلُ الْمُؤْمِنِينَ إِيمَانًا أَحْسَنُهُمْ خُلُقًا، وَخِيَارُكُمْ خِيَارُكُمْ لِنِسَائِهِمْ.",
+      "banglaText": "মুমিনদের মধ্যে ঈমানে সর্বাধিক পরিপূর্ণ ব্যক্তি সে-ই, যার চরিত্র সবচেয়ে সুন্দর। আর তোমাদের মধ্যে সর্বোত্তম ব্যক্তি সে, যে তার পরিবারের নারীদের সাথে সর্বোত্তম ব্যবহার করে।",
+      "explanation": "চরিত্রের মহত্ত্ব ও নারীদের প্রতি সম্মান মুমিনের ঈমানী পূর্ণতার পরিমাপক।",
+      "grade": "হাসান সহীহ"
+    },
+    {
+      "hadithNumber": "১৯৮৭",
+      "hadithIndexInBook": 1987,
+      "chapterNumber": 27,
+      "pageNumber": 133,
+      "narrator": "হযরত মুআজ ইবনে জাবাল (রা.)",
+      "arabicText": "اتَّقِ اللَّهَ حَيْثُمَا كُنْتَ، وَأَتْبِعِ السَّيِّئَةَ الْحَسَنَةَ تَمْحُهَا، وَخَالِقِ النَّاسَ بِخُلُقٍ حَسَنٍ.",
+      "banglaText": "তুমি যেখানেই থাকো না কেন আল্লাহকে ভয় করো। কোনো ভুল হলে সাথে সাথে সৎকাজ করো, তা পাপকে মিটিয়ে দেবে। আর মানুষের সাথে সুন্দর সদ্ব্যবহার করো।",
+      "explanation": "তাকওয়া, তাওবা ও সদাচারের সার্বজনীন উপদেশ।",
+      "grade": "হাসান সহীহ"
+    }
+  ]
+}

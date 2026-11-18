@@ -1,0 +1,49 @@
+{
+  "bookId": "abudawood",
+  "nameBengali": "সুনান আবু দাউদ",
+  "nameArabic": "سنن أبي داود",
+  "compiler": "ইমাম আবু দাউদ সুলাইমান আস-সিজিস্তানী (রহ.)",
+  "totalHadithCount": "৫,২৭৪টি হাদিস",
+  "chapters": [
+    {
+      "chapterNumber": 1,
+      "nameBengali": "পবিত্রতা অর্জনের বিধান",
+      "nameArabic": "كتاب الطهارة",
+      "hadithRange": "১ - ৩৯০",
+      "hadithCount": 390,
+      "startPage": 1,
+      "endPage": 90
+    },
+    {
+      "chapterNumber": 2,
+      "nameBengali": "সালাতের নিয়ম ও ক্বেরাত",
+      "nameArabic": "كتاب الصلاة",
+      "hadithRange": "৩৯১ - ১১৬১",
+      "hadithCount": 771,
+      "startPage": 91,
+      "endPage": 230
+    },
+    {
+      "chapterNumber": 41,
+      "nameBengali": "উত্তম শিষ্টাচার ও চালচলন",
+      "nameArabic": "كتاب الأدب",
+      "hadithRange": "৪৭৭৩ - ৫২৭৪",
+      "hadithCount": 502,
+      "startPage": 281,
+      "endPage": 360
+    }
+  ],
+  "hadiths": [
+    {
+      "hadithNumber": "৪৭৯৯",
+      "hadithIndexInBook": 4799,
+      "chapterNumber": 41,
+      "pageNumber": 281,
+      "narrator": "হযরত আবু উমামা (রা.)",
+      "arabicText": "أَنَا زَعِيمٌ بِبَيْتٍ فِي رَبَضِ الْجَنَّةِ لِمَنْ تَرَكَ الْمِرَاءَ وَإِنْ كَانَ مُحِقًّا...",
+      "banglaText": "আমি সেই ব্যক্তির জন্য জান্নাতের সীমানায় একটি প্রাসাদের জামিনদার যে সত্যের ওপর থাকা সত্ত্বেও অনর্থক বিতর্ক বর্জন করে...",
+      "explanation": "বিতর্কহীনতা ও সত্যবাদিতা জান্নাতের প্রাসাদের নিশ্চয়তা।",
+      "grade": "সহীহ"
+    }
+  ]
+}

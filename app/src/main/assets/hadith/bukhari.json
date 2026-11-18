@@ -1,0 +1,963 @@
+{
+  "bookId": "bukhari",
+  "nameBengali": "সহীহ বুখারী",
+  "nameArabic": "صحيح البخاري",
+  "compiler": "ইমাম মুহাম্মদ ইবনে ইসমাইল আল-বুখারী (রহ.)",
+  "totalHadithCount": "৭,৫৬৩টি হাদিস",
+  "chapters": [
+    {
+      "chapterNumber": 1,
+      "nameBengali": "কিতাবুল ওহী (ওহীর সূচনা পর্ব)",
+      "nameArabic": "كتاب بدء الوحي",
+      "hadithRange": "1 - 7",
+      "hadithCount": 7,
+      "startPage": 1,
+      "endPage": 4
+    },
+    {
+      "chapterNumber": 2,
+      "nameBengali": "কিতাবুল ঈমান (ঈমান ও বিশ্বাস)",
+      "nameArabic": "كتاب الإيمان",
+      "hadithRange": "8 - 58",
+      "hadithCount": 51,
+      "startPage": 5,
+      "endPage": 22
+    },
+    {
+      "chapterNumber": 3,
+      "nameBengali": "কিতাবুল ইলম (জ্ঞান অর্জন ও মর্যাদা)",
+      "nameArabic": "كتاب العلم",
+      "hadithRange": "59 - 134",
+      "hadithCount": 76,
+      "startPage": 23,
+      "endPage": 48
+    },
+    {
+      "chapterNumber": 4,
+      "nameBengali": "কিতাবুল ওযু (পবিত্রতা ও ওযুর বিধান)",
+      "nameArabic": "كتاب الوضوء",
+      "hadithRange": "135 - 247",
+      "hadithCount": 113,
+      "startPage": 49,
+      "endPage": 85
+    },
+    {
+      "chapterNumber": 5,
+      "nameBengali": "কিতাবুল গোসল (গোসল ও তাহারাত)",
+      "nameArabic": "كتاب الغسل",
+      "hadithRange": "248 - 293",
+      "hadithCount": 46,
+      "startPage": 86,
+      "endPage": 102
+    },
+    {
+      "chapterNumber": 6,
+      "nameBengali": "কিতাবুল হায়েজ (নারীদের বিশেষ বিধান)",
+      "nameArabic": "كتاب الحيض",
+      "hadithRange": "294 - 333",
+      "hadithCount": 40,
+      "startPage": 103,
+      "endPage": 118
+    },
+    {
+      "chapterNumber": 7,
+      "nameBengali": "কিতাবুত তায়াম্মুম (তায়াম্মুমের নিয়ম)",
+      "nameArabic": "كتاب التيمم",
+      "hadithRange": "334 - 348",
+      "hadithCount": 15,
+      "startPage": 119,
+      "endPage": 125
+    },
+    {
+      "chapterNumber": 8,
+      "nameBengali": "কিতাবুস সালাত (নামাজ প্রতিষ্ঠা ও হুকুম)",
+      "nameArabic": "كتاب الصلاة",
+      "hadithRange": "349 - 520",
+      "hadithCount": 172,
+      "startPage": 126,
+      "endPage": 185
+    },
+    {
+      "chapterNumber": 9,
+      "nameBengali": "সালাতের ওয়াক্ত ও সময়সীমা",
+      "nameArabic": "كتاب مواقيت الصلاة",
+      "hadithRange": "521 - 602",
+      "hadithCount": 82,
+      "startPage": 186,
+      "endPage": 215
+    },
+    {
+      "chapterNumber": 10,
+      "nameBengali": "আযান ও ইকামতের অধ্যায়",
+      "nameArabic": "كتاب الأذان",
+      "hadithRange": "603 - 875",
+      "hadithCount": 273,
+      "startPage": 216,
+      "endPage": 310
+    },
+    {
+      "chapterNumber": 11,
+      "nameBengali": "জুমু'আ ও সাপ্তাহিক সমাবেশ",
+      "nameArabic": "كتاب الجمعة",
+      "hadithRange": "876 - 941",
+      "hadithCount": 66,
+      "startPage": 311,
+      "endPage": 335
+    },
+    {
+      "chapterNumber": 12,
+      "nameBengali": "ভীতি ও সংকটের নামাজ (সালাতুল খাওফ)",
+      "nameArabic": "كتاب صلاة الخوف",
+      "hadithRange": "942 - 947",
+      "hadithCount": 6,
+      "startPage": 336,
+      "endPage": 340
+    },
+    {
+      "chapterNumber": 13,
+      "nameBengali": "দুই ঈদের সালাত ও তাকবীর",
+      "nameArabic": "كتاب العيدين",
+      "hadithRange": "948 - 989",
+      "hadithCount": 42,
+      "startPage": 341,
+      "endPage": 360
+    },
+    {
+      "chapterNumber": 14,
+      "nameBengali": "বিতর সালাত ও রাতের ইবাদত",
+      "nameArabic": "كتاب الوتر",
+      "hadithRange": "990 - 1004",
+      "hadithCount": 15,
+      "startPage": 361,
+      "endPage": 368
+    },
+    {
+      "chapterNumber": 15,
+      "nameBengali": "বৃষ্টি প্রার্থনা (সালাতুল ইসতিসকা)",
+      "nameArabic": "كتاب الاستسقاء",
+      "hadithRange": "1005 - 1039",
+      "hadithCount": 35,
+      "startPage": 369,
+      "endPage": 385
+    },
+    {
+      "chapterNumber": 16,
+      "nameBengali": "সূর্য ও চন্দ্রগ্রহণের সালাত",
+      "nameArabic": "كتاب الكسوف",
+      "hadithRange": "1040 - 1066",
+      "hadithCount": 27,
+      "startPage": 386,
+      "endPage": 400
+    },
+    {
+      "chapterNumber": 17,
+      "nameBengali": "কুরআন তিলাওয়াতের সিজদাহ",
+      "nameArabic": "كتاب سجود القرآن",
+      "hadithRange": "1067 - 1079",
+      "hadithCount": 13,
+      "startPage": 401,
+      "endPage": 408
+    },
+    {
+      "chapterNumber": 18,
+      "nameBengali": "মুসাফিরের সালাত সংক্ষেপ (কসর)",
+      "nameArabic": "كتاب تقصير الصلاة",
+      "hadithRange": "1080 - 1119",
+      "hadithCount": 40,
+      "startPage": 409,
+      "endPage": 425
+    },
+    {
+      "chapterNumber": 19,
+      "nameBengali": "তাহাজ্জুদ ও কিয়ামুল লাইল",
+      "nameArabic": "كتاب التهجد",
+      "hadithRange": "1120 - 1187",
+      "hadithCount": 68,
+      "startPage": 426,
+      "endPage": 455
+    },
+    {
+      "chapterNumber": 20,
+      "nameBengali": "মসজিদে নববী ও মক্কার সালাতের ফজিলত",
+      "nameArabic": "كتاب فضل الصلاة في مسجد مكة والمدينة",
+      "hadithRange": "1188 - 1197",
+      "hadithCount": 10,
+      "startPage": 456,
+      "endPage": 462
+    },
+    {
+      "chapterNumber": 21,
+      "nameBengali": "সালাতে নিষিদ্ধ ও বৈধ কাজ",
+      "nameArabic": "كتاب العمل في الصلاة",
+      "hadithRange": "1198 - 1223",
+      "hadithCount": 26,
+      "startPage": 463,
+      "endPage": 475
+    },
+    {
+      "chapterNumber": 22,
+      "nameBengali": "সালাতে ভুল ও সাহু সিজদাহ",
+      "nameArabic": "كتاب السهو",
+      "hadithRange": "1224 - 1236",
+      "hadithCount": 13,
+      "startPage": 476,
+      "endPage": 482
+    },
+    {
+      "chapterNumber": 23,
+      "nameBengali": "জানাযা ও দাফন-কাফন পর্ব",
+      "nameArabic": "كتاب الجنائز",
+      "hadithRange": "1237 - 1394",
+      "hadithCount": 158,
+      "startPage": 483,
+      "endPage": 545
+    },
+    {
+      "chapterNumber": 24,
+      "nameBengali": "কিতাবুয যাকাত (যাকাত ও সাদাকাহ)",
+      "nameArabic": "كتاب الزكاة",
+      "hadithRange": "1395 - 1513",
+      "hadithCount": 119,
+      "startPage": 546,
+      "endPage": 595
+    },
+    {
+      "chapterNumber": 25,
+      "nameBengali": "সাদাকাতুল ফিতর ও দান",
+      "nameArabic": "كتاب صدقة الفطر",
+      "hadithRange": "1503 - 1512",
+      "hadithCount": 10,
+      "startPage": 596,
+      "endPage": 602
+    },
+    {
+      "chapterNumber": 26,
+      "nameBengali": "কিতাবুল হজ্জ (হজ্জের রুকন ও ইহরাম)",
+      "nameArabic": "كتاب الحج",
+      "hadithRange": "1513 - 1772",
+      "hadithCount": 260,
+      "startPage": 603,
+      "endPage": 710
+    },
+    {
+      "chapterNumber": 27,
+      "nameBengali": "উমরাহ ও মক্কা তাওয়াফ",
+      "nameArabic": "كتاب العمرة",
+      "hadithRange": "1773 - 1805",
+      "hadithCount": 33,
+      "startPage": 711,
+      "endPage": 725
+    },
+    {
+      "chapterNumber": 28,
+      "nameBengali": "ইহরাম অবস্থায় শিকার ও জরিমানা",
+      "nameArabic": "كتاب جزاء الصيد",
+      "hadithRange": "1821 - 1866",
+      "hadithCount": 46,
+      "startPage": 726,
+      "endPage": 745
+    },
+    {
+      "chapterNumber": 29,
+      "nameBengali": "মদীনা মুনাওয়ারার ফজিলত ও حرم",
+      "nameArabic": "كتاب فضائل المدينة",
+      "hadithRange": "1867 - 1890",
+      "hadithCount": 24,
+      "startPage": 746,
+      "endPage": 755
+    },
+    {
+      "chapterNumber": 30,
+      "nameBengali": "কিতাবুস সাওম (রোজা ও তারাবিহ)",
+      "nameArabic": "كتاب الصوم",
+      "hadithRange": "1891 - 2007",
+      "hadithCount": 117,
+      "startPage": 756,
+      "endPage": 810
+    },
+    {
+      "chapterNumber": 31,
+      "nameBengali": "তারাবীহর নামাজ ও কিয়ামুল লাইল",
+      "nameArabic": "كتاب صلاة التراويح",
+      "hadithRange": "2008 - 2013",
+      "hadithCount": 6,
+      "startPage": 811,
+      "endPage": 815
+    },
+    {
+      "chapterNumber": 32,
+      "nameBengali": "লাইলাতুল কদর ও মহিমান্বিত রাত",
+      "nameArabic": "كتاب فضل ليلة القدر",
+      "hadithRange": "2014 - 2024",
+      "hadithCount": 11,
+      "startPage": 816,
+      "endPage": 822
+    },
+    {
+      "chapterNumber": 33,
+      "nameBengali": "ইতিকাফ ও আত্মনিবেদন",
+      "nameArabic": "كتاب الاعتكاف",
+      "hadithRange": "2025 - 2046",
+      "hadithCount": 22,
+      "startPage": 823,
+      "endPage": 835
+    },
+    {
+      "chapterNumber": 34,
+      "nameBengali": "কিতাবুল বুয়ূ (হালাল বাণিজ্য ও ক্রয়-বিক্রয়)",
+      "nameArabic": "كتاب البيوع",
+      "hadithRange": "2047 - 2238",
+      "hadithCount": 192,
+      "startPage": 836,
+      "endPage": 920
+    },
+    {
+      "chapterNumber": 35,
+      "nameBengali": "বায়ুস সালাম ও অগ্রিম মূল্য পরিশোধ",
+      "nameArabic": "كتاب السلم",
+      "hadithRange": "2239 - 2256",
+      "hadithCount": 18,
+      "startPage": 921,
+      "endPage": 930
+    },
+    {
+      "chapterNumber": 36,
+      "nameBengali": "শুফ'আ ও অংশীদারিত্বের অধিকার",
+      "nameArabic": "كتاب الشفعة",
+      "hadithRange": "2257 - 2259",
+      "hadithCount": 3,
+      "startPage": 931,
+      "endPage": 935
+    },
+    {
+      "chapterNumber": 37,
+      "nameBengali": "ইজারা ও পারিশ্রমিক নির্ধারণ",
+      "nameArabic": "كتاب الإجارة",
+      "hadithRange": "2260 - 2286",
+      "hadithCount": 27,
+      "startPage": 936,
+      "endPage": 950
+    },
+    {
+      "chapterNumber": 38,
+      "nameBengali": "হাওয়ালা ও ঋণ স্থানান্তর",
+      "nameArabic": "كتاب الحوالات",
+      "hadithRange": "2287 - 2289",
+      "hadithCount": 3,
+      "startPage": 951,
+      "endPage": 955
+    },
+    {
+      "chapterNumber": 39,
+      "nameBengali": "জামিনদার ও জামানত",
+      "nameArabic": "كتاب الكفالة",
+      "hadithRange": "2290 - 2298",
+      "hadithCount": 9,
+      "startPage": 956,
+      "endPage": 960
+    },
+    {
+      "chapterNumber": 40,
+      "nameBengali": "ওকালাত ও প্রতিনিধিত্ব",
+      "nameArabic": "كتاب الوكالة",
+      "hadithRange": "2299 - 2319",
+      "hadithCount": 21,
+      "startPage": 961,
+      "endPage": 972
+    },
+    {
+      "chapterNumber": 41,
+      "nameBengali": "বর্গাচাষ ও কৃষি ব্যবস্থাপনা",
+      "nameArabic": "كتاب المزارعة",
+      "hadithRange": "2320 - 2350",
+      "hadithCount": 31,
+      "startPage": 973,
+      "endPage": 985
+    },
+    {
+      "chapterNumber": 42,
+      "nameBengali": "সেচ ও পানি বণ্টন",
+      "nameArabic": "كتاب المساقاة",
+      "hadithRange": "2351 - 2384",
+      "hadithCount": 34,
+      "startPage": 986,
+      "endPage": 1000
+    },
+    {
+      "chapterNumber": 43,
+      "nameBengali": "ঋণ পরিশোধ ও দেউলিয়াত্ব",
+      "nameArabic": "كتاب الاستقراض",
+      "hadithRange": "2385 - 2409",
+      "hadithCount": 25,
+      "startPage": 1001,
+      "endPage": 1015
+    },
+    {
+      "chapterNumber": 44,
+      "nameBengali": "বিবাদ মীমাংসা ও বিরোধ নিষ্পত্তি",
+      "nameArabic": "كتاب الخصومات",
+      "hadithRange": "2410 - 2425",
+      "hadithCount": 16,
+      "startPage": 1016,
+      "endPage": 1025
+    },
+    {
+      "chapterNumber": 45,
+      "nameBengali": "হারানো প্রাপ্ত বস্তু (লুকতাহ)",
+      "nameArabic": "كتاب اللقطة",
+      "hadithRange": "2426 - 2439",
+      "hadithCount": 14,
+      "startPage": 1026,
+      "endPage": 1035
+    },
+    {
+      "chapterNumber": 46,
+      "nameBengali": "মজলুমের অধিকার ও অত্যাচার বর্জন",
+      "nameArabic": "كتاب المظالم",
+      "hadithRange": "2440 - 2482",
+      "hadithCount": 43,
+      "startPage": 1036,
+      "endPage": 1060
+    },
+    {
+      "chapterNumber": 47,
+      "nameBengali": "অংশীদারিত্ব (শিরকাত)",
+      "nameArabic": "كتاب الشركة",
+      "hadithRange": "2483 - 2507",
+      "hadithCount": 25,
+      "startPage": 1061,
+      "endPage": 1075
+    },
+    {
+      "chapterNumber": 48,
+      "nameBengali": "বন্ধক রাখা ও জামানত",
+      "nameArabic": "كتاب الرهن",
+      "hadithRange": "2508 - 2516",
+      "hadithCount": 9,
+      "startPage": 1076,
+      "endPage": 1082
+    },
+    {
+      "chapterNumber": 49,
+      "nameBengali": "গোলাম আযাদ ও মুক্তি",
+      "nameArabic": "كتاب العتق",
+      "hadithRange": "2517 - 2559",
+      "hadithCount": 43,
+      "startPage": 1083,
+      "endPage": 1105
+    },
+    {
+      "chapterNumber": 50,
+      "nameBengali": "মুকাতিব ও মুক্তিচুক্তি",
+      "nameArabic": "كتاب المكاتب",
+      "hadithRange": "2560 - 2565",
+      "hadithCount": 6,
+      "startPage": 1106,
+      "endPage": 1110
+    },
+    {
+      "chapterNumber": 51,
+      "nameBengali": "হিবা ও উপহার বিনিময়",
+      "nameArabic": "كتاب الهبة",
+      "hadithRange": "2566 - 2636",
+      "hadithCount": 71,
+      "startPage": 1111,
+      "endPage": 1145
+    },
+    {
+      "chapterNumber": 52,
+      "nameBengali": "সাক্ষ্য প্রদান ও বিচার",
+      "nameArabic": "كتاب الشهادات",
+      "hadithRange": "2637 - 2689",
+      "hadithCount": 53,
+      "startPage": 1146,
+      "endPage": 1170
+    },
+    {
+      "chapterNumber": 53,
+      "nameBengali": "সন্ধি ও আপোষ নিষ্পত্তি",
+      "nameArabic": "كتاب الصلح",
+      "hadithRange": "2690 - 2710",
+      "hadithCount": 21,
+      "startPage": 1171,
+      "endPage": 1182
+    },
+    {
+      "chapterNumber": 54,
+      "nameBengali": "শর্তযুক্ত চুক্তি ও প্রতিশ্রুতি",
+      "nameArabic": "كتاب الشروط",
+      "hadithRange": "2711 - 2737",
+      "hadithCount": 27,
+      "startPage": 1183,
+      "endPage": 1200
+    },
+    {
+      "chapterNumber": 55,
+      "nameBengali": "অসিয়ত ও মিরাস পূর্ব বণ্টন",
+      "nameArabic": "كتاب الوصايا",
+      "hadithRange": "2738 - 2781",
+      "hadithCount": 44,
+      "startPage": 1201,
+      "endPage": 1225
+    },
+    {
+      "chapterNumber": 56,
+      "nameBengali": "কিতাবুল জিহাদ ও দেশরক্ষা",
+      "nameArabic": "كتاب الجهاد والسير",
+      "hadithRange": "2782 - 3090",
+      "hadithCount": 309,
+      "startPage": 1226,
+      "endPage": 1380
+    },
+    {
+      "chapterNumber": 57,
+      "nameBengali": "গনিমতের এক-পঞ্চমাংশ (খুমুস)",
+      "nameArabic": "كتاب فرض الخمس",
+      "hadithRange": "3091 - 3155",
+      "hadithCount": 65,
+      "startPage": 1381,
+      "endPage": 1410
+    },
+    {
+      "chapterNumber": 58,
+      "nameBengali": "জিযিয়া ও সন্ধির বিধান",
+      "nameArabic": "كتاب الجزية والموادعة",
+      "hadithRange": "3156 - 3189",
+      "hadithCount": 34,
+      "startPage": 1411,
+      "endPage": 1430
+    },
+    {
+      "chapterNumber": 59,
+      "nameBengali": "সৃষ্টির সূচনা ও ফেরেশতাগণ",
+      "nameArabic": "كتاب بدء الخلق",
+      "hadithRange": "3190 - 3325",
+      "hadithCount": 136,
+      "startPage": 1431,
+      "endPage": 1495
+    },
+    {
+      "chapterNumber": 60,
+      "nameBengali": "নবী-রাসূলগণের ঘটনা ও ইতিহাস",
+      "nameArabic": "كتاب أحاديث الأنبياء",
+      "hadithRange": "3326 - 3488",
+      "hadithCount": 163,
+      "startPage": 1496,
+      "endPage": 1580
+    },
+    {
+      "chapterNumber": 61,
+      "nameBengali": "রাসূলুল্লাহ (সা.)-এর সুমহান গুণাবলী",
+      "nameArabic": "كتاب المناقب",
+      "hadithRange": "3489 - 3648",
+      "hadithCount": 160,
+      "startPage": 1581,
+      "endPage": 1660
+    },
+    {
+      "chapterNumber": 62,
+      "nameBengali": "সাহাবায়ে কেরামের সুউচ্চ মর্যাদা",
+      "nameArabic": "كتاب فضائل الصحابة",
+      "hadithRange": "3649 - 3775",
+      "hadithCount": 127,
+      "startPage": 1661,
+      "endPage": 1720
+    },
+    {
+      "chapterNumber": 63,
+      "nameBengali": "আনসার সাহাবীগণের অনন্য ত্যাগ",
+      "nameArabic": "كتاب مناقب الأنصار",
+      "hadithRange": "3776 - 3948",
+      "hadithCount": 173,
+      "startPage": 1721,
+      "endPage": 1795
+    },
+    {
+      "chapterNumber": 64,
+      "nameBengali": "মাগাযী (নবীজির যুদ্ধ অভিযানসমূহ)",
+      "nameArabic": "كتاب المغازي",
+      "hadithRange": "3949 - 4473",
+      "hadithCount": 525,
+      "startPage": 1796,
+      "endPage": 2050
+    },
+    {
+      "chapterNumber": 65,
+      "nameBengali": "কুরআনের তাফসির ও শানে নুযুল",
+      "nameArabic": "كتاب التفسير",
+      "hadithRange": "4474 - 4977",
+      "hadithCount": 504,
+      "startPage": 2051,
+      "endPage": 2300
+    },
+    {
+      "chapterNumber": 66,
+      "nameBengali": "কুরআনের অনুপম ফজিলতসমূহ",
+      "nameArabic": "كتاب فضائل القرآن",
+      "hadithRange": "4978 - 5062",
+      "hadithCount": 85,
+      "startPage": 2301,
+      "endPage": 2345
+    },
+    {
+      "chapterNumber": 67,
+      "nameBengali": "বিবাহ ও পারিবারিক সম্পর্ক (নিকাহ)",
+      "nameArabic": "كتاب النكاح",
+      "hadithRange": "5063 - 5250",
+      "hadithCount": 188,
+      "startPage": 2346,
+      "endPage": 2440
+    },
+    {
+      "chapterNumber": 68,
+      "nameBengali": "তালাক ও বিচ্ছিন্নতা",
+      "nameArabic": "كتاب الطلاق",
+      "hadithRange": "5251 - 5350",
+      "hadithCount": 100,
+      "startPage": 2441,
+      "endPage": 2490
+    },
+    {
+      "chapterNumber": 69,
+      "nameBengali": "স্ত্রী ও সন্তানদের ভরণপোষণ",
+      "nameArabic": "كتاب النفقات",
+      "hadithRange": "5351 - 5372",
+      "hadithCount": 22,
+      "startPage": 2491,
+      "endPage": 2505
+    },
+    {
+      "chapterNumber": 70,
+      "nameBengali": "খাদ্য ও আহারের সুন্নাতসমূহ",
+      "nameArabic": "كتاب الأطعمة",
+      "hadithRange": "5373 - 5466",
+      "hadithCount": 94,
+      "startPage": 2506,
+      "endPage": 2555
+    },
+    {
+      "chapterNumber": 71,
+      "nameBengali": "আক্বীকা ও নবজাতকের অধিকার",
+      "nameArabic": "كتاب العقيقة",
+      "hadithRange": "5467 - 5474",
+      "hadithCount": 8,
+      "startPage": 2556,
+      "endPage": 2562
+    },
+    {
+      "chapterNumber": 72,
+      "nameBengali": "জবেহ ও শিকারের প্রাণী",
+      "nameArabic": "كتاب الذبائح والصيد",
+      "hadithRange": "5475 - 5544",
+      "hadithCount": 70,
+      "startPage": 2563,
+      "endPage": 2600
+    },
+    {
+      "chapterNumber": 73,
+      "nameBengali": "কুরবানি ও আত্মত্যাগ",
+      "nameArabic": "كتاب الأضاحي",
+      "hadithRange": "5545 - 5574",
+      "hadithCount": 30,
+      "startPage": 2601,
+      "endPage": 2618
+    },
+    {
+      "chapterNumber": 74,
+      "nameBengali": "পানীয় গ্রহণ ও শিষ্টাচার",
+      "nameArabic": "كتاب الأشربة",
+      "hadithRange": "5575 - 5639",
+      "hadithCount": 65,
+      "startPage": 2619,
+      "endPage": 2650
+    },
+    {
+      "chapterNumber": 75,
+      "nameBengali": "রোগী সেবা ও চিকিৎসা (তিব্ব)",
+      "nameArabic": "كتاب المرضى والطب",
+      "hadithRange": "5640 - 5782",
+      "hadithCount": 143,
+      "startPage": 2651,
+      "endPage": 2720
+    },
+    {
+      "chapterNumber": 76,
+      "nameBengali": "পোশাক ও পরিচ্ছদের আদব",
+      "nameArabic": "كتاب اللباس",
+      "hadithRange": "5783 - 5969",
+      "hadithCount": 187,
+      "startPage": 2721,
+      "endPage": 2810
+    },
+    {
+      "chapterNumber": 77,
+      "nameBengali": "কিতাবুল আদব (সদাচার ও ব্যবহার)",
+      "nameArabic": "كتاب الأدب",
+      "hadithRange": "5970 - 6243",
+      "hadithCount": 274,
+      "startPage": 2811,
+      "endPage": 2950
+    },
+    {
+      "chapterNumber": 78,
+      "nameBengali": "অনুমতি প্রার্থনা ও সালাম প্রদান",
+      "nameArabic": "كتاب الاستئذان",
+      "hadithRange": "6244 - 6303",
+      "hadithCount": 60,
+      "startPage": 2951,
+      "endPage": 2980
+    },
+    {
+      "chapterNumber": 79,
+      "nameBengali": "দু'আ ও ইস্তিগফার (মুনাজাত)",
+      "nameArabic": "كتاب الدعوات",
+      "hadithRange": "6304 - 6411",
+      "hadithCount": 108,
+      "startPage": 2981,
+      "endPage": 3035
+    },
+    {
+      "chapterNumber": 80,
+      "nameBengali": "হৃদয় বিগলিত করার উপদেশ (রিকাক)",
+      "nameArabic": "كتاب الرقاق",
+      "hadithRange": "6412 - 6593",
+      "hadithCount": 182,
+      "startPage": 3036,
+      "endPage": 3130
+    },
+    {
+      "chapterNumber": 81,
+      "nameBengali": "তাকদীর ও ভাগ্যে বিশ্বাস",
+      "nameArabic": "كتاب القدر",
+      "hadithRange": "6594 - 6620",
+      "hadithCount": 27,
+      "startPage": 3131,
+      "endPage": 3145
+    },
+    {
+      "chapterNumber": 82,
+      "nameBengali": "কসম ও মান্নত পালন",
+      "nameArabic": "كتاب الأيمان والنذور",
+      "hadithRange": "6621 - 6707",
+      "hadithCount": 87,
+      "startPage": 3146,
+      "endPage": 3190
+    },
+    {
+      "chapterNumber": 83,
+      "nameBengali": "কাফফারা ও ক্ষতিপূরণ",
+      "nameArabic": "كتاب كفارات الأيمان",
+      "hadithRange": "6708 - 6722",
+      "hadithCount": 15,
+      "startPage": 3191,
+      "endPage": 3200
+    },
+    {
+      "chapterNumber": 84,
+      "nameBengali": "উত্তরাধিকার ও মিরাস বণ্টন",
+      "nameArabic": "كتاب الفرائض",
+      "hadithRange": "6723 - 6771",
+      "hadithCount": 49,
+      "startPage": 3201,
+      "endPage": 3230
+    },
+    {
+      "chapterNumber": 85,
+      "nameBengali": "ইসলামী দণ্ডবিধি (হুদুদ)",
+      "nameArabic": "كتاب الحدود",
+      "hadithRange": "6772 - 6860",
+      "hadithCount": 89,
+      "startPage": 3231,
+      "endPage": 3280
+    },
+    {
+      "chapterNumber": 86,
+      "nameBengali": "রক্তপণ ও দিয়াত",
+      "nameArabic": "كتاب الديات",
+      "hadithRange": "6861 - 6917",
+      "hadithCount": 57,
+      "startPage": 3281,
+      "endPage": 3310
+    },
+    {
+      "chapterNumber": 87,
+      "nameBengali": "মুরতাদ ও বিদ্রোহীদের শাস্তি",
+      "nameArabic": "كتاب استتابة المرتدين",
+      "hadithRange": "6918 - 6939",
+      "hadithCount": 22,
+      "startPage": 3311,
+      "endPage": 3325
+    },
+    {
+      "chapterNumber": 88,
+      "nameBengali": "বাধ্যকরণ ও অপারগতা",
+      "nameArabic": "كتاب الإكراه",
+      "hadithRange": "6940 - 6952",
+      "hadithCount": 13,
+      "startPage": 3326,
+      "endPage": 3335
+    },
+    {
+      "chapterNumber": 89,
+      "nameBengali": "হিলা ও অপকৌশল বর্জন",
+      "nameArabic": "كتاب الحيل",
+      "hadithRange": "6953 - 6981",
+      "hadithCount": 29,
+      "startPage": 3336,
+      "endPage": 3350
+    },
+    {
+      "chapterNumber": 90,
+      "nameBengali": "স্বপ্নের ব্যাখ্যা ও দর্শন",
+      "nameArabic": "كتاب التعبير",
+      "hadithRange": "6982 - 7047",
+      "hadithCount": 66,
+      "startPage": 3351,
+      "endPage": 3390
+    },
+    {
+      "chapterNumber": 91,
+      "nameBengali": "ফিতনা ও কিয়ামতের আলামত",
+      "nameArabic": "كتاب الفتن",
+      "hadithRange": "7048 - 7143",
+      "hadithCount": 96,
+      "startPage": 3391,
+      "endPage": 3445
+    },
+    {
+      "chapterNumber": 92,
+      "nameBengali": "বিচার ও শাসনব্যবস্থা (আহকাম)",
+      "nameArabic": "كتاب الأحكام",
+      "hadithRange": "7144 - 7225",
+      "hadithCount": 82,
+      "startPage": 3446,
+      "endPage": 3490
+    },
+    {
+      "chapterNumber": 93,
+      "nameBengali": "কামনা ও উচ্চাশা বর্জন",
+      "nameArabic": "كتاب التمني",
+      "hadithRange": "7226 - 7245",
+      "hadithCount": 20,
+      "startPage": 3491,
+      "endPage": 3505
+    },
+    {
+      "chapterNumber": 94,
+      "nameBengali": "খবরে ওয়াহিদ ও একক ব্যক্তির সাক্ষ্য",
+      "nameArabic": "كتاب أخبار الآحاد",
+      "hadithRange": "7246 - 7267",
+      "hadithCount": 22,
+      "startPage": 3506,
+      "endPage": 3520
+    },
+    {
+      "chapterNumber": 95,
+      "nameBengali": "কুরআন ও সুন্নাহ আঁকড়ে ধরা",
+      "nameArabic": "كتاب الاعتصام بالكتاب والسنة",
+      "hadithRange": "7268 - 7370",
+      "hadithCount": 103,
+      "startPage": 3521,
+      "endPage": 3575
+    },
+    {
+      "chapterNumber": 96,
+      "nameBengali": "কিতাবুত তাওহীদ (আল্লাহর একত্ববাদ)",
+      "nameArabic": "كتاب التوحيد",
+      "hadithRange": "7371 - 7563",
+      "hadithCount": 193,
+      "startPage": 3576,
+      "endPage": 3680
+    }
+  ],
+  "hadiths": [
+    {
+      "hadithNumber": "১",
+      "hadithIndexInBook": 1,
+      "chapterNumber": 1,
+      "pageNumber": 1,
+      "narrator": "হযরত উমর ইবনুল খাত্তাব (রা.)",
+      "arabicText": "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى، فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى دُنْيَا يُصِيبُهَا أَوْ إِلَى امْرَأَةٍ يَنْكِحُهَا، فَهِجْرَتُهُ إِلَى مَا هَاجَرَ إِلَيْهِ.",
+      "banglaText": "যাবতীয় আমল নিয়তের ওপর নির্ভরশীল। প্রত্যেক মানুষ তার নিয়তের ফলই পাবে। সুতরাং যার হিজরত হবে আল্লাহ ও তাঁর রাসূলের সন্তুষ্টির উদ্দেশ্যে, তার হিজরত সে উদ্দেশ্যেই গণ্য হবে। আর যার হিজরত পার্থিব কোনো লাভ কিংবা কোনো নারীকে বিবাহ করার উদ্দেশ্যে হবে, তার হিজরত গণ্য হবে সেই লক্ষ্যেই যে উদ্দেশ্যে সে হিজরত করেছে।",
+      "explanation": "হাদিস বিশারদগণের মতে, এই হাদিসটি ইসলামের এক-তৃতীয়াংশ অথবা অর্ধেক দ্বীনের ভিত্তি। অন্তরের শুদ্ধ নিয়ত ব্যতীত কোনো সৎ আমলই কবুল হয় না।",
+      "grade": "মুত্তাফাক আলাইহ (সহীহ বুখারী ও মুসলিম)"
+    },
+    {
+      "hadithNumber": "২",
+      "hadithIndexInBook": 2,
+      "chapterNumber": 1,
+      "pageNumber": 1,
+      "narrator": "উম্মুল মুমিনীন হযরত আয়েশা (রা.)",
+      "arabicText": "أَنَّ الْحَارِثَ بْنَ هِشَامٍ رَضِيَ اللَّهُ عَنْهُ سَأَلَ رَسُولَ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ فَقَالَ: يَا رَسُولَ اللَّهِ كَيْفَ يَأْتِيكَ الْوَحْيُ؟ فَقَالَ رَسُولُ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ: أَحْيَانًا يَأْتِينِي مِثْلَ صَلْصَلَةِ الْجَرَسِ وَهُوَ أَشَدُّهُ عَلَيَّ فَيَفْصِمُ عَنِّي وَقَدْ وَعَيْتُ عَنْهُ مَا قَالَ، وَأَحْيَانًا يَتَمَثَّلُ لِي الْمَلَكُ رَجُلاً فَيُكَلِّمُنِي فَأَعِي مَا يَقُولُ.",
+      "banglaText": "হারিস ইবনে হিশাম (রা.) রাসূলুল্লাহ ﷺ-কে জিজ্ঞাসা করলেন: হে আল্লাহর রাসূল! আপনার নিকট ওহী কীভাবে আসে? রাসূলুল্লাহ ﷺ বললেন: কোনো কোনো সময় তা ঘন্টার ধ্বনির মতো আসে, আর এটি আমার ওপর সবচেয়ে কষ্টদায়ক হয়। অতঃপর ওহী সমাপ্ত হলে যা বলা হয়েছে তা আমি মুখস্থ করে ফেলি। আবার কখনো ফেরেশতা মানুষের আকৃতিতে আমার কাছে আসেন এবং আমার সাথে কথা বলেন, তখন তিনি যা বলেন আমি তা ধারণ করে নিই।",
+      "explanation": "ওহী নাযিলের তীব্রতা ও আধ্যাত্মিক গাম্ভীর্যের অনন্য বিবরণ।",
+      "grade": "সহীহ"
+    },
+    {
+      "hadithNumber": "৩",
+      "hadithIndexInBook": 3,
+      "chapterNumber": 1,
+      "pageNumber": 2,
+      "narrator": "উম্মুল মুমিনীন হযরত আয়েশা (রা.)",
+      "arabicText": "أَوَّلُ مَا بُدِئَ بِهِ رَسُولُ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ مِنَ الْوَحْيِ الرُّؤْيَا الصَّالِحَةُ فِي النَّوْمِ، فَكَانَ لاَ يَرَى رُؤْيَا إِلاَّ جَاءَتْ مِثْلَ فَلَقِ الصُّبْحِ، ثُمَّ حُبِّبَ إِلَيْهِ الْخَلاَءُ، وَكَانَ يَخْلُو بِغَارِ حِرَاءٍ فَيَتَحَنَّثُ فِيهِ... حَتَّى جَاءَهُ الْحَقُّ وَهُوَ فِي غَارِ حِرَاءٍ، فَجَاءَهُ الْمَلَكُ فَقَالَ: اقْرَأْ، قَالَ: مَا أَنَا بِقَارِئٍ.",
+      "banglaText": "রাসূলুল্লাহ ﷺ-এর প্রতি ওহীর সূচনা হয়েছিল নিদ্রাবস্থায় সত্য স্বপ্নের মাধ্যমে। তিনি যে স্বপ্নই দেখতেন, তা প্রত্যুষের আলোর মতো সুস্পষ্ট রূপ লাভ করত। অতঃপর তাঁর কাছে নির্জনতা প্রিয় হয়ে উঠল এবং তিনি হেরা গুহায় নির্জনে অবস্থান করে ইবাদত করতে লাগলেন। অবশেষে হেরা গুহায় তাঁর কাছে সত্য এলো—ফেরেশতা জিবরীল (আ.) এসে বললেন: পড়ুন! তিনি বললেন: আমি পড়তে জানি না...",
+      "explanation": "সূরা আলাকের প্রথম পাঁচ আয়াত নাযিলের ঐতিহাসিক পটভূমি।",
+      "grade": "সহীহ"
+    },
+    {
+      "hadithNumber": "৯",
+      "hadithIndexInBook": 9,
+      "chapterNumber": 2,
+      "pageNumber": 5,
+      "narrator": "হযরত আবু হুরায়রা (রা.)",
+      "arabicText": "الإِيمَانُ بِضْعٌ وَسِتُّونَ شُعْبَةً، وَالْحَيَاءُ شُعْبَةٌ مِنَ الإِيمَانِ.",
+      "banglaText": "ঈমানের ষাটেরও অধিক শাখা-প্রশাখা রয়েছে। আর লজ্জা বা হায়া হলো ঈমানের অন্যতম প্রধান শাখা।",
+      "explanation": "লজ্জাশীলতা মানুষকে পাপাচার থেকে বিরত রাখে এবং সৎকাজে উৎসাহিত করে।",
+      "grade": "সহীহ"
+    },
+    {
+      "hadithNumber": "১৩",
+      "hadithIndexInBook": 13,
+      "chapterNumber": 2,
+      "pageNumber": 6,
+      "narrator": "হযরত আনাস ইবনে মালিক (রা.)",
+      "arabicText": "لاَ يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ.",
+      "banglaText": "তোমাদের মধ্যে কেউ প্রকৃত মুমিন হতে পারবে না, যতক্ষণ না সে তার ভাইয়ের জন্য ঠিক তাই ভালোবাসে ও পছন্দ করে, যা সে নিজের জন্য পছন্দ করে।",
+      "explanation": "ভ্রাতৃত্বের সর্বোচ্চ চূড়া হলো পরার্থপরতা।",
+      "grade": "সহীহ"
+    },
+    {
+      "hadithNumber": "৫০২৭",
+      "hadithIndexInBook": 5027,
+      "chapterNumber": 3,
+      "pageNumber": 23,
+      "narrator": "হযরত উসমান ইবনে আফফান (রা.)",
+      "arabicText": "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ.",
+      "banglaText": "তোমাদের মধ্যে সর্বোত্তম ও সর্বশ্রেষ্ঠ ব্যক্তি সে-ই, যে নিজে আল-কুরআন শিক্ষা গ্রহণ করে এবং অন্যদের তা শিক্ষা দেয়।",
+      "explanation": "কুরআনের সাথে সম্পর্কযুক্ত ইলমই সৃষ্টির সেরা জ্ঞান।",
+      "grade": "সহীহ"
+    },
+    {
+      "hadithNumber": "৬০১৮",
+      "hadithIndexInBook": 6018,
+      "chapterNumber": 77,
+      "pageNumber": 246,
+      "narrator": "হযরত আবু হুরায়রা (রা.)",
+      "arabicText": "مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ، وَمَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الآخِرِ فَلْيُكْرِمْ جَارَهُ، وَمَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الآخِرِ فَلْيُكْرِمْ ضَيْفَهُ.",
+      "banglaText": "যে ব্যক্তি আল্লাহ ও শেষ দিবসের প্রতি বিশ্বাস রাখে, সে যেন ভালো কথা বলে অথবা নীরবতা পালন করে। যে ব্যক্তি আল্লাহ ও শেষ দিবসের ওপর বিশ্বাস রাখে, সে যেন প্রতিবেশীকে সম্মান করে। আর যে ব্যক্তি আল্লাহ ও পরকালের প্রতি ঈমান রাখে, সে যেন তার মেহমানের সমাদর করে।",
+      "explanation": "জিহ্বার সংযম, প্রতিবেশীর অধিকার রক্ষা এবং মেহমানদারী মুমিনের বৈশিষ্ট্য।",
+      "grade": "সহীহ"
+    },
+    {
+      "hadithNumber": "২৩০৫",
+      "hadithIndexInBook": 2305,
+      "chapterNumber": 43,
+      "pageNumber": 248,
+      "narrator": "হযরত আবু হুরায়রা (রা.)",
+      "arabicText": "إِنَّ خِيَارَكُمْ أَحْسَنُكُمْ قَضَاءً.",
+      "banglaText": "নিশ্চয়ই তোমাদের মধ্যে সর্বোত্তম সেই ব্যক্তি, যে ঋণ বা পাওনা পরিশোধের ক্ষেত্রে সবচেয়ে উত্তম ও সুন্দর আচরণ প্রদর্শন করে।",
+      "explanation": "ইসলামে সময়মতো সুন্দরভাবে ঋণ পরিশোধকারীকে সর্বোত্তম ব্যক্তির মর্যাদা দেওয়া হয়েছে।",
+      "grade": "সহীহ"
+    }
+  ]
+}
