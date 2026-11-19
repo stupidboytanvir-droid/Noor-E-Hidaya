@@ -3593,6 +3593,17 @@ fun SecurityReportDialog(onDismiss: () -> Unit) {
                     )
                 }
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(uiText("App Check প্রোভাইডার:", "App Check Provider:"), style = MaterialTheme.typography.labelSmall.copy(color = SlateGrayMuted))
+                    Text(
+                        com.example.data.security.AppCheckDiagnostics.activeProviderMode,
+                        style = MaterialTheme.typography.labelSmall.copy(color = ChampagneGold, fontWeight = FontWeight.Bold)
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(uiText("সার্টিফিকেট SHA-256 ফিঙ্গারপ্রিন্ট:", "Certificate SHA-256 Fingerprint:"), style = MaterialTheme.typography.labelSmall.copy(color = SlateGrayMuted))
                 Text(

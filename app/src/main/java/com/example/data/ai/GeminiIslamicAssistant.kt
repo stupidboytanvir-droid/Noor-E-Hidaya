@@ -144,7 +144,7 @@ class GeminiIslamicAssistant {
         private const val TAG = "GeminiIslamicAssistant"
         private const val CHAT_MODEL_NAME = "gemini-3.8-flash"
         private const val NASIHAH_MODEL_NAME = "gemini-3.8-flash"
-        private const val INFERENCE_TIMEOUT_MS = 20_000L
+        private const val INFERENCE_TIMEOUT_MS = 35_000L
     }
 
     private val chatModel by lazy {

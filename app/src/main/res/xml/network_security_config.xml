@@ -11,6 +11,11 @@
     <!-- Specific domain trust configuration for authorized CDNs and APIs -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">googleapis.com</domain>
+        <domain includeSubdomains="true">firebaseappcheck.googleapis.com</domain>
+        <domain includeSubdomains="true">identitytoolkit.googleapis.com</domain>
+        <domain includeSubdomains="true">securetoken.googleapis.com</domain>
+        <domain includeSubdomains="true">recaptcha.net</domain>
+        <domain includeSubdomains="true">gstatic.com</domain>
         <domain includeSubdomains="true">firebaseio.com</domain>
         <domain includeSubdomains="true">firestore.googleapis.com</domain>
         <domain includeSubdomains="true">fastly.net</domain>

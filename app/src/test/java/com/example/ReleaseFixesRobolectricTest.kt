@@ -106,4 +106,23 @@ class ReleaseFixesRobolectricTest {
             )
         )
     }
+
+    @Test
+    fun `app check ttl parser and error diagnostics preserve actionable details`() {
+        assertEquals(3_600_000L, com.example.data.security.parseTtlMillis("3600s"))
+        assertEquals(1_800_000L, com.example.data.security.parseTtlMillis("1800.5s"))
+        assertEquals(60_000L, com.example.data.security.parseTtlMillis("10s"))
+
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val repo = com.example.data.auth.AuthRepository(
+            context,
+            com.example.data.preference.AppPreferences(context)
+        )
+        val attestationMsg = repo.buildAppCheckFriendlyMessage("App Check attestation HTTP 403: App attestation failed.")
+        assertTrue(attestationMsg.contains("HTTP 403"))
+        assertTrue(attestationMsg.contains("Debug Token"))
+
+        val timeoutMsg = repo.buildAppCheckFriendlyMessage("reCAPTCHA(NETWORK_ERROR): timeout")
+        assertTrue(timeoutMsg.contains("NETWORK_ERROR"))
+    }
 }

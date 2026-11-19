@@ -494,7 +494,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 DailyNasihahUiState.Loading
             }
 
-            val backoffMs = listOf(1_500L)
+            // On fresh install with no cache, never leave the user staring at a spinner for >4s;
+            // reveal an authentic Hadith-based Nasihah immediately and seamlessly upgrade when Gemini arrives.
+            val graceJob = if (!forceRefresh && latestCached == null) {
+                launch {
+                    delay(4_000L)
+                    if (_dailyNasihahState.value is DailyNasihahUiState.Loading) {
+                        val quickFallback = geminiAssistant.buildAuthenticFallbackNasihah(
+                            appContext,
+                            targetLang,
+                            dateKey
+                        )
+                        _dailyNasihahState.value = DailyNasihahUiState.Ready(quickFallback)
+                    }
+                }
+            } else null
+
+            val backoffMs = listOf(1_200L)
             try {
                 var attempt = 0
                 while (attempt <= backoffMs.size && isActive) {
@@ -505,6 +521,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             dateKey = dateKey,
                             forceRefresh = forceRefresh
                         )
+                        graceJob?.cancel()
                         _dailyNasihahState.value = DailyNasihahUiState.Ready(generated)
                         return@launch
                     } catch (e: CancellationException) {
@@ -519,11 +536,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     attempt++
                 }
-                // Never leave user stuck in endless loading spinner; surface cached or authentic Hadith-based fallback
-                val fallback = DailyNasihahCache.getLatestForLanguage(appContext, targetLang)
-                    ?: geminiAssistant.buildAuthenticFallbackNasihah(appContext, targetLang, dateKey)
-                _dailyNasihahState.value = DailyNasihahUiState.Ready(fallback)
+                graceJob?.cancel()
+                val currentReady = (_dailyNasihahState.value as? DailyNasihahUiState.Ready)?.nasihah
+                if (currentReady == null || forceRefresh) {
+                    val fallback = DailyNasihahCache.getLatestForLanguage(appContext, targetLang)
+                        ?: geminiAssistant.buildAuthenticFallbackNasihah(appContext, targetLang, dateKey)
+                    _dailyNasihahState.value = DailyNasihahUiState.Ready(fallback)
+                }
             } finally {
+                graceJob?.cancel()
                 if (activeNasihahKey == requestKey) {
                     activeNasihahKey = null
                 }

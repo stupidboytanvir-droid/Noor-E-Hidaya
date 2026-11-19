@@ -62,7 +62,8 @@ sealed class AuthState {
     data class Success(val user: UserSession) : AuthState()
     data class Error(
         val message: String,
-        val suggestGoogleFallback: Boolean = false
+        val suggestGoogleFallback: Boolean = false,
+        val isAppCheckError: Boolean = false
     ) : AuthState()
 }
 
@@ -456,6 +457,24 @@ class AuthRepository(
                     credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
                 ) {
                     val googleCred = GoogleIdTokenCredential.createFrom(credential.data)
+                    _authState.value = AuthState.Loading("নিরাপত্তা যাচাই ও লগইন সম্পন্ন হচ্ছে...")
+
+                    // Pre-acquire & verify a genuine Firebase App Check token with automatic retry.
+                    // Prevents FirebaseAuth from silently sending a dummy error placeholder token.
+                    val appCheckResult = com.example.data.security.ensureValidAppCheckToken(context)
+                    if (appCheckResult.isFailure) {
+                        val cause = appCheckResult.exceptionOrNull()
+                        val detail = cause?.let {
+                            com.example.data.security.AppCheckDiagnostics.formatConciseError(it)
+                        } ?: "Unknown App Check error"
+                        Log.e(TAG, "App Check verification failed before Google Sign-In: $detail", cause)
+                        _authState.value = AuthState.Error(
+                            message = buildAppCheckFriendlyMessage(detail),
+                            isAppCheckError = true
+                        )
+                        return@launch
+                    }
+
                     val firebaseCred = GoogleAuthProvider.getCredential(googleCred.idToken, null)
                     val authResult = firebaseAuth.signInWithCredential(firebaseCred).await()
                     val firebaseUser = authResult.user
@@ -502,14 +521,35 @@ class AuthRepository(
             } catch (e: Exception) {
                 Log.e(TAG, "Google Sign-In failed: ${e.message}", e)
                 val errMsg = e.message.orEmpty()
-                val friendlyMsg = when {
-                    errMsg.contains("App Check", ignoreCase = true) ->
-                        "নিরাপত্তা যাচাই (App Check) সম্পন্ন করা যায়নি। ফোনের তারিখ ও সময় (Automatic Date & Time) এবং ইন্টারনেট ঠিক আছে কিনা দেখে আবার চেষ্টা করুন।"
-                    else ->
-                        "গুগল দিয়ে সাইন ইন করতে সমস্যা হয়েছে: ${e.localizedMessage ?: "ইন্টারনেট সংযোগ চেক করুন"}"
+                val isAppCheck = errMsg.contains("App Check", ignoreCase = true)
+                val friendlyMsg = if (isAppCheck) {
+                    val lastDetail = com.example.data.security.AppCheckDiagnostics.lastErrorMessage
+                        ?.takeIf { it.isNotBlank() }
+                        ?: errMsg
+                    buildAppCheckFriendlyMessage(lastDetail)
+                } else {
+                    "গুগল দিয়ে সাইন ইন করতে সমস্যা হয়েছে: ${e.localizedMessage ?: "ইন্টারনেট সংযোগ চেক করুন"}"
                 }
-                _authState.value = AuthState.Error(friendlyMsg)
+                _authState.value = AuthState.Error(
+                    message = friendlyMsg,
+                    isAppCheckError = isAppCheck
+                )
             }
+        }
+    }
+
+    internal fun buildAppCheckFriendlyMessage(rawDetail: String): String {
+        val clean = rawDetail.trim().take(160)
+        return when {
+            clean.contains("HTTP 403", ignoreCase = true) ||
+                clean.contains("attestation failed", ignoreCase = true) ->
+                "Firebase App Check এই ডিভাইসের নিরাপত্তা টোকেন অনুমোদন করেনি ($clean)। প্লে-স্টোর ছাড়া ইনস্টল করা ডিবাগ APK হলে নিচে Firebase Console থেকে রেজিস্টার্ড Debug Token বসিয়ে অথবা Firebase Console-এ App Check → Authentication এনফোর্সমেন্ট চেক করে আবার চেষ্টা করুন।"
+            clean.contains("NETWORK", ignoreCase = true) ||
+                clean.contains("timeout", ignoreCase = true) ||
+                clean.contains("Unable to resolve host", ignoreCase = true) ->
+                "দুর্বল ইন্টারনেট বা reCAPTCHA সংযোগে দেরি হওয়ায় নিরাপত্তা যাচাই সম্পন্ন হয়নি ($clean)। স্থিতিশীল ইন্টারনেটে আবার চেষ্টা করুন।"
+            else ->
+                "নিরাপত্তা যাচাই (App Check) সম্পন্ন করা যায়নি ($clean)। অনুগ্রহ করে আবার চেষ্টা করুন।"
         }
     }
 

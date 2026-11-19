@@ -271,6 +271,95 @@ fun AuthScreen(
                                 }
                             }
 
+                            if (errorState.isAppCheckError && com.example.BuildConfig.DEBUG) {
+                                var showDebugTokenInput by remember { mutableStateOf(false) }
+                                var debugTokenText by remember { mutableStateOf("") }
+                                var tokenStatusMsg by remember { mutableStateOf<String?>(null) }
+
+                                TextButton(
+                                    onClick = { showDebugTokenInput = !showDebugTokenInput },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .defaultMinSize(minHeight = 48.dp)
+                                        .testTag("toggle_debug_token_helper_button")
+                                ) {
+                                    Text(
+                                        text = if (showDebugTokenInput) {
+                                            uiText("Debug Token অপশন লুকান", "Hide Debug Token Option")
+                                        } else {
+                                            uiText("🔑 App Check Debug Token দিয়ে সাইন-ইন করুন", "🔑 Use App Check Debug Token")
+                                        },
+                                        color = ChampagneGold,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+
+                                if (showDebugTokenInput) {
+                                    OutlinedTextField(
+                                        value = debugTokenText,
+                                        onValueChange = { debugTokenText = it },
+                                        placeholder = {
+                                            Text(
+                                                text = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                                                color = SlateGrayMuted,
+                                                fontSize = 12.sp
+                                            )
+                                        },
+                                        singleLine = true,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .testTag("debug_token_input"),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedTextColor = Color.White,
+                                            unfocusedTextColor = Color.White,
+                                            focusedBorderColor = ChampagneGold,
+                                            unfocusedBorderColor = HairlineBorder,
+                                            focusedContainerColor = DarkEmeraldElevated,
+                                            unfocusedContainerColor = DarkEmeraldElevated
+                                        )
+                                    )
+                                    Button(
+                                        onClick = {
+                                            val installed = com.example.data.security.installManualDebugToken(
+                                                context,
+                                                debugTokenText
+                                            )
+                                            if (installed) {
+                                                tokenStatusMsg = null
+                                                showDebugTokenInput = false
+                                                activity?.let { authViewModel.signInWithGoogle(it) }
+                                            } else {
+                                                tokenStatusMsg = "সঠিক UUID ফরম্যাটের Debug Token দিন"
+                                            }
+                                        },
+                                        enabled = debugTokenText.trim().length >= 16 && activity != null,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .defaultMinSize(minHeight = 48.dp)
+                                            .testTag("apply_debug_token_button"),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = ChampagneGold,
+                                            contentColor = ObsidianBackground
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(
+                                            text = uiText("টোকেন সেট করুন ও গুগল লগইন করুন", "Apply Token & Sign In"),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                    tokenStatusMsg?.let { status ->
+                                        Text(
+                                            text = status,
+                                            color = Color(0xFFFFCC80),
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                }
+                            }
+
                             if (errorState.suggestGoogleFallback && activity != null) {
                                 OutlinedButton(
                                     onClick = {
@@ -279,7 +368,7 @@ fun AuthScreen(
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(38.dp)
+                                        .defaultMinSize(minHeight = 48.dp)
                                         .testTag("error_google_fallback_button"),
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(
