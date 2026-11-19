@@ -1,6 +1,6 @@
 {
-  "versionCode": 5,
-  "versionName": "1.4",
-  "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.4/Noor-e-Hidayah-v1.4.apk",
-  "releaseNotes": "v1.4: Fixed Mosque Mode auto-restore back to Normal ringer mode (synchronous state commits, anti-vibrate-poisoning protection, triple-redundant restore alarms + 15-min watchdog + resume recovery + exact-alarm permission prompt); separated Pre-Jama'at Wudu/preparation alerts (timed relative to Mosque Mode Jama'at time) from Waqt-start transition alerts; improved Google Sign-In App Check flow (non-blocking pre-flight, exact Firebase SDK payload/headers, 1-tap copyable Device Debug Token & Console shortcut)."
+  "versionCode": 6,
+  "versionName": "1.5",
+  "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.5/Noor-e-Hidayah-v1.5.apk",
+  "releaseNotes": "v1.5: তিলাওয়াত স্টুডিও ও দু'আর অডিও ফিক্সড (১০০% পুরুষ কারীর বিশুদ্ধ তিলাওয়াত ও ডাইরেক্ট প্লেয়ার ফলব্যাক); প্রতিটি জিমেইল ও মোবাইল একাউন্টের জন্য সম্পূর্ণ আলাদা ক্লাউড ডাটা ও ০ থেকে শুরু; ইবাদত চার্ট থেকে দু'আ বাদ দেওয়া হয়েছে; এবং নতুন প্রিমিয়াম সাইন-ইন পেজ ডিজাইন। (Fixed Tilawat Studio & Dua 100% male audio, strict per-account cloud data isolation, removed Dua from worship charts, and redesigned Sign-In screen.)"
 }

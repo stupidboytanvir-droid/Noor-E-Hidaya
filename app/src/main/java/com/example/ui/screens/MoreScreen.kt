@@ -1355,7 +1355,7 @@ fun UnifiedProfileCloudSyncCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             val uiLang = LocalAppLanguage.current
-            // 5 Live Real Worship Counters Strip (Zero-initialized for new users)
+            // 4 Live Real Worship Counters Strip (Zero-initialized for new users)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround,
@@ -1369,11 +1369,6 @@ fun UnifiedProfileCloudSyncCard(
                         "${uiState.quranReadMinutes}m"
                     },
                     label = uiText("কুরআন", "Quran")
-                )
-                FlatStatCounter(
-                    icon = "🤲",
-                    count = formatLocalizedInt(uiState.duasReadCount, uiLang),
-                    label = uiText("দু'আ", "Duas")
                 )
                 FlatStatCounter(
                     icon = "📿",

@@ -1,13 +1,45 @@
 package com.example.ui.screens
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.ContextWrapper
-import androidx.compose.animation.*
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,14 +49,55 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.VpnKey
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -32,14 +105,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.BuildConfig
 import com.example.data.auth.AuthState
-import com.example.ui.components.FrostedGlassCard
+import com.example.data.security.FIREBASE_APP_CHECK_CONSOLE_URL
+import com.example.data.security.getOrCreateDeviceDebugToken
+import com.example.data.security.installManualDebugToken
 import com.example.ui.components.Icon3DType
 import com.example.ui.components.ThreeDimensionalIcon
-import com.example.ui.theme.*
+import com.example.ui.theme.AmiriFontFamily
+import com.example.ui.theme.ChampagneGold
+import com.example.ui.theme.ChampagneGoldMuted
+import com.example.ui.theme.DarkEmeraldCard
+import com.example.ui.theme.DarkEmeraldElevated
+import com.example.ui.theme.DarkEmeraldSurface
+import com.example.ui.theme.HairlineBorder
+import com.example.ui.theme.MintGlow
+import com.example.ui.theme.ObsidianBackground
+import com.example.ui.theme.SlateGrayMuted
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.uiText
 import com.example.ui.viewmodel.AuthViewModel
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlinx.coroutines.delay
 
 enum class AuthTabSelection {
@@ -106,463 +197,415 @@ fun AuthScreen(
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
-                        ObsidianBackground,
-                        DarkEmeraldSurface,
-                        ObsidianBackground
+                    colorStops = arrayOf(
+                        0.0f to Color(0xFF040D0C),
+                        0.32f to Color(0xFF0A1B18),
+                        0.72f to DarkEmeraldSurface,
+                        1.0f to ObsidianBackground
                     )
                 )
             )
+            .drawBehind {
+                // Subtle golden halo behind the top crest
+                val topCenter = Offset(size.width * 0.5f, size.height * 0.14f)
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            ChampagneGold.copy(alpha = 0.16f),
+                            MintGlow.copy(alpha = 0.04f),
+                            Color.Transparent
+                        ),
+                        center = topCenter,
+                        radius = size.minDimension * 0.58f
+                    ),
+                    radius = size.minDimension * 0.58f,
+                    center = topCenter
+                )
+
+                // Delicate Islamic Rub el Hizb (8-point geometric star) watermark behind header
+                val starRadius = size.minDimension * 0.34f
+                val strokeColor = ChampagneGold.copy(alpha = 0.07f)
+                for (rotDeg in listOf(0.0, 45.0)) {
+                    val path = Path()
+                    for (i in 0 until 4) {
+                        val angle = (rotDeg + i * 90.0) * PI / 180.0
+                        val x = topCenter.x + (starRadius * cos(angle)).toFloat()
+                        val y = topCenter.y + (starRadius * sin(angle)).toFloat()
+                        if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                    }
+                    path.close()
+                    drawPath(path = path, color = strokeColor, style = Stroke(width = 1.2.dp.toPx()))
+                }
+                drawCircle(
+                    color = ChampagneGold.copy(alpha = 0.06f),
+                    radius = starRadius * 0.72f,
+                    center = topCenter,
+                    style = Stroke(width = 1.dp.toPx())
+                )
+
+                // Subtle bottom emerald aura
+                val bottomGlow = Offset(size.width * 0.5f, size.height * 0.92f)
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            MintGlow.copy(alpha = 0.08f),
+                            Color.Transparent
+                        ),
+                        center = bottomGlow,
+                        radius = size.minDimension * 0.65f
+                    ),
+                    radius = size.minDimension * 0.65f,
+                    center = bottomGlow
+                )
+            }
             .windowInsetsPadding(WindowInsets.statusBars)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .imePadding()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 24.dp),
+                .padding(horizontal = 20.dp, vertical = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // TOP HEADER: 3D Mosque Logo & Spiritual Title
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = 16.dp, bottom = 24.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 520.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // TOP SPIRITUAL CREST & BRANDING
+                Spacer(modifier = Modifier.height(10.dp))
+
                 Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    ChampagneGold.copy(alpha = 0.25f),
-                                    Color.Transparent
-                                )
-                            )
-                        )
-                        .border(1.5.dp, ChampagneGold.copy(alpha = 0.6f), CircleShape),
+                    modifier = Modifier.size(96.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    ThreeDimensionalIcon(
-                        type = Icon3DType.MOSQUE_HOME,
-                        size = 50.dp,
-                        isActive = true,
-                        accentColor = ChampagneGold
+                    // Outer subtle golden halo ring
+                    Box(
+                        modifier = Modifier
+                            .size(96.dp)
+                            .clip(CircleShape)
+                            .border(
+                                width = 1.dp,
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        ChampagneGold.copy(alpha = 0.55f),
+                                        ChampagneGold.copy(alpha = 0.10f),
+                                        MintGlow.copy(alpha = 0.35f)
+                                    )
+                                ),
+                                shape = CircleShape
+                            )
                     )
+                    // Inner medallion
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFF1A3530),
+                                        Color(0xFF0A1917)
+                                    )
+                                )
+                            )
+                            .border(
+                                width = 1.5.dp,
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        ChampagneGold.copy(alpha = 0.85f),
+                                        ChampagneGoldMuted.copy(alpha = 0.35f)
+                                    )
+                                ),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ThreeDimensionalIcon(
+                            type = Icon3DType.MOSQUE_HOME,
+                            size = 48.dp,
+                            isActive = true,
+                            accentColor = ChampagneGold
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Text(
+                    text = "نُورُ الْهِدَايَةِ",
+                    fontFamily = AmiriFontFamily,
+                    fontSize = 22.sp,
+                    color = ChampagneGold,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
                     text = uiText("নূর-এ-হেদায়াত", "Noor-e-Hidayah"),
                     style = MaterialTheme.typography.headlineMedium.copy(
-                        color = Color.White,
+                        color = TextPrimary,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = uiText("Noor-e-Hidayah • নূরানী দ্বীনি সফর", "Noor-e-Hidayah • Spiritual Companion"),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = ChampagneGold,
-                        fontWeight = FontWeight.Medium
-                    )
+                        fontSize = 26.sp,
+                        letterSpacing = 0.3.sp
+                    ),
+                    textAlign = TextAlign.Center
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = uiText(
-                        "আমল সংরক্ষণ ও নিরাপদ সাইন-ইন করতে একাউন্টে প্রবেশ করুন",
-                        "Sign in to sync your worship records and access cloud backup safely"
+                        "আপনার প্রতিদিনের আমল, তাসবিহ ও কুরআন পাঠ নিরাপদে সংরক্ষণ করুন",
+                        "Keep your daily worship, Tasbeeh & Quran journey synced securely"
                     ),
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = SlateGrayMuted,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
                         textAlign = TextAlign.Center
                     ),
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp)
                 )
-            }
 
-            // MIDDLE CARD: Tab Switcher & Dynamic Input
-            FrostedGlassCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    // Segmented Tab Switcher (Google Primary vs Phone OTP)
-                    Row(
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Compact 3-pillar trust highlights
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                ) {
+                    AuthHighlightChip(
+                        icon = Icons.Default.CloudDone,
+                        label = uiText("ক্লাউড ব্যাকআপ", "Cloud Sync"),
+                        accent = MintGlow
+                    )
+                    AuthHighlightChip(
+                        icon = Icons.Default.VerifiedUser,
+                        label = uiText("আলাদা প্রোফাইল", "Private Data"),
+                        accent = ChampagneGold
+                    )
+                    AuthHighlightChip(
+                        icon = Icons.Default.AutoAwesome,
+                        label = uiText("বিজ্ঞাপনমুক্ত", "Ad-Free"),
+                        accent = Color(0xFF7CE8C1)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // ELEVATED AUTH CARD
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            width = 1.dp,
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    ChampagneGold.copy(alpha = 0.42f),
+                                    HairlineBorder,
+                                    Color.White.copy(alpha = 0.05f)
+                                )
+                            ),
+                            shape = RoundedCornerShape(24.dp)
+                        ),
+                    shape = RoundedCornerShape(24.dp),
+                    color = DarkEmeraldCard.copy(alpha = 0.88f),
+                    tonalElevation = 4.dp
+                ) {
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(DarkEmeraldElevated)
-                            .padding(4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            .padding(horizontal = 20.dp, vertical = 22.dp)
                     ) {
-                        TabButton(
-                            title = uiText("🌐 গুগল একাউন্ট", "🌐 Google Account"),
-                            isSelected = selectedTab == AuthTabSelection.GOOGLE_AUTH,
-                            onClick = {
-                                selectedTab = AuthTabSelection.GOOGLE_AUTH
-                                activeCodeSent = null
-                                authViewModel.resetToPhoneInput()
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        TabButton(
-                            title = uiText("📱 মোবাইল ওটিপি", "📱 Phone OTP"),
-                            isSelected = selectedTab == AuthTabSelection.PHONE_OTP,
-                            onClick = {
-                                selectedTab = AuthTabSelection.PHONE_OTP
-                                activeCodeSent = null
-                                authViewModel.resetToPhoneInput()
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Error Message Banner if error occurs
-                    if (authState is AuthState.Error) {
-                        val errorState = authState as AuthState.Error
-                        Column(
+                        // Refined Segmented Mode Switcher (Material Icons, zero emojis)
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFF4A1F24))
-                                .border(0.5.dp, Color(0xFFE57373), RoundedCornerShape(10.dp))
-                                .padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFF071210))
+                                .border(1.dp, HairlineBorder, RoundedCornerShape(14.dp))
+                                .padding(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Warning,
-                                    contentDescription = uiText("ত্রুটি", "Error"),
-                                    tint = Color(0xFFEF9A9A),
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Text(
-                                    text = errorState.message,
-                                    color = Color.White,
-                                    fontSize = 12.sp,
-                                    lineHeight = 17.sp,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(
-                                    onClick = { authViewModel.resetToPhoneInput() },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = uiText("বন্ধ", "Close"),
-                                        tint = SlateGrayMuted,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                            }
+                            AuthTabButton(
+                                icon = Icons.Default.AccountCircle,
+                                title = uiText("গুগল একাউন্ট", "Google Account"),
+                                isSelected = selectedTab == AuthTabSelection.GOOGLE_AUTH,
+                                onClick = {
+                                    selectedTab = AuthTabSelection.GOOGLE_AUTH
+                                    activeCodeSent = null
+                                    authViewModel.resetToPhoneInput()
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
 
-                            if (errorState.isAppCheckError && com.example.BuildConfig.DEBUG) {
-                                var showDebugTokenInput by remember { mutableStateOf(false) }
-                                var debugTokenText by remember {
-                                    mutableStateOf(com.example.data.security.getOrCreateDeviceDebugToken(context))
-                                }
-                                var tokenStatusMsg by remember { mutableStateOf<String?>(null) }
+                            AuthTabButton(
+                                icon = Icons.Default.PhoneAndroid,
+                                title = uiText("মোবাইল ওটিপি", "Phone OTP"),
+                                isSelected = selectedTab == AuthTabSelection.PHONE_OTP,
+                                onClick = {
+                                    selectedTab = AuthTabSelection.PHONE_OTP
+                                    activeCodeSent = null
+                                    authViewModel.resetToPhoneInput()
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
 
-                                TextButton(
-                                    onClick = { showDebugTokenInput = !showDebugTokenInput },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .defaultMinSize(minHeight = 48.dp)
-                                        .testTag("toggle_debug_token_helper_button")
-                                ) {
-                                    Text(
-                                        text = if (showDebugTokenInput) {
-                                            uiText("Debug Token অপশন লুকান", "Hide Debug Token Option")
-                                        } else {
-                                            uiText("🔑 এই ফোনের Debug Token দেখুন ও লগইন করুন", "🔑 Use App Check Debug Token")
-                                        },
-                                        color = ChampagneGold,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                }
+                        Spacer(modifier = Modifier.height(18.dp))
 
-                                if (showDebugTokenInput) {
-                                    Text(
-                                        text = uiText(
-                                            "১) নিচের টোকেনটি কপি করুন → ২) Firebase Console খুলে App Check → Manage debug tokens-এ যোগ করুন → ৩) নিচের 'টোকেন সেট করুন ও গুগল লগইন করুন' বাটনে ট্যাপ করুন:",
-                                            "1) Copy this token -> 2) Open Firebase Console -> App Check -> Manage debug tokens -> Add -> 3) Tap 'Apply Token & Sign In':"
-                                        ),
-                                        color = Color(0xFFFFE0B2),
-                                        fontSize = 11.sp,
-                                        lineHeight = 15.sp
-                                    )
-                                    OutlinedTextField(
-                                        value = debugTokenText,
-                                        onValueChange = { debugTokenText = it },
-                                        placeholder = {
-                                            Text(
-                                                text = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-                                                color = SlateGrayMuted,
-                                                fontSize = 12.sp
-                                            )
-                                        },
-                                        singleLine = true,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .testTag("debug_token_input"),
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            focusedTextColor = Color.White,
-                                            unfocusedTextColor = Color.White,
-                                            focusedBorderColor = ChampagneGold,
-                                            unfocusedBorderColor = HairlineBorder,
-                                            focusedContainerColor = DarkEmeraldElevated,
-                                            unfocusedContainerColor = DarkEmeraldElevated
-                                        )
-                                    )
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        OutlinedButton(
-                                            onClick = {
-                                                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE)
-                                                    as? android.content.ClipboardManager
-                                                cm?.setPrimaryClip(
-                                                    android.content.ClipData.newPlainText(
-                                                        "AppCheckDebugToken",
-                                                        debugTokenText.trim()
-                                                    )
-                                                )
-                                                tokenStatusMsg = "টোকেন কপি হয়েছে! এখন Firebase Console-এ পেস্ট করুন।"
-                                            },
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .defaultMinSize(minHeight = 48.dp)
-                                                .testTag("copy_debug_token_button"),
-                                            shape = RoundedCornerShape(8.dp),
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                                        ) {
-                                            Text(
-                                                text = uiText("কপি করুন", "Copy Token"),
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
-                                        }
-                                        OutlinedButton(
-                                            onClick = {
-                                                try {
-                                                    val intent = android.content.Intent(
-                                                        android.content.Intent.ACTION_VIEW,
-                                                        android.net.Uri.parse(
-                                                            com.example.data.security.FIREBASE_APP_CHECK_CONSOLE_URL
-                                                        )
-                                                    ).apply {
-                                                        addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                                    }
-                                                    context.startActivity(intent)
-                                                } catch (_: Exception) {
-                                                    tokenStatusMsg = "ব্রাউজার খুলতে সমস্যা হয়েছে।"
-                                                }
-                                            },
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .defaultMinSize(minHeight = 48.dp)
-                                                .testTag("open_firebase_console_button"),
-                                            shape = RoundedCornerShape(8.dp),
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = ChampagneGold)
-                                        ) {
-                                            Text(
-                                                text = uiText("Firebase খুলুন", "Open Console"),
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
-                                        }
-                                    }
-                                    Button(
-                                        onClick = {
-                                            val installed = com.example.data.security.installManualDebugToken(
-                                                context,
-                                                debugTokenText
-                                            )
-                                            if (installed) {
-                                                tokenStatusMsg = null
-                                                showDebugTokenInput = false
-                                                activity?.let { authViewModel.signInWithGoogle(it) }
-                                            } else {
-                                                tokenStatusMsg = "সঠিক UUID ফরম্যাটের Debug Token দিন"
+                        // Animated Error Banner & Debug Token Helper
+                        AnimatedVisibility(
+                            visible = authState is AuthState.Error,
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically()
+                        ) {
+                            val errorState = authState as? AuthState.Error
+                            if (errorState != null) {
+                                Column {
+                                    AuthErrorBanner(
+                                        errorState = errorState,
+                                        context = context,
+                                        activity = activity,
+                                        onDismiss = { authViewModel.resetToPhoneInput() },
+                                        onGoogleFallback = {
+                                            activity?.let { act ->
+                                                selectedTab = AuthTabSelection.GOOGLE_AUTH
+                                                authViewModel.signInWithGoogle(act)
                                             }
                                         },
-                                        enabled = debugTokenText.trim().length >= 16 && activity != null,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .defaultMinSize(minHeight = 48.dp)
-                                            .testTag("apply_debug_token_button"),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = ChampagneGold,
-                                            contentColor = ObsidianBackground
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    ) {
-                                        Text(
-                                            text = uiText("টোকেন সেট করুন ও গুগল লগইন করুন", "Apply Token & Sign In"),
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                    tokenStatusMsg?.let { status ->
-                                        Text(
-                                            text = status,
-                                            color = Color(0xFFFFCC80),
-                                            fontSize = 11.sp
-                                        )
-                                    }
-                                }
-                            }
-
-                            if (errorState.suggestGoogleFallback && activity != null) {
-                                OutlinedButton(
-                                    onClick = {
-                                        selectedTab = AuthTabSelection.GOOGLE_AUTH
-                                        authViewModel.signInWithGoogle(activity)
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .defaultMinSize(minHeight = 48.dp)
-                                        .testTag("error_google_fallback_button"),
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        containerColor = Color.White,
-                                        contentColor = Color.Black
+                                        onDebugTokenApplied = {
+                                            activity?.let { act ->
+                                                authViewModel.signInWithGoogle(act)
+                                            }
+                                        }
                                     )
-                                ) {
-                                    Text(
-                                        text = uiText(
-                                            "🌐 গুগল একাউন্ট দিয়ে তাৎক্ষণিক লগইন করুন",
-                                            "🌐 Sign in instantly with Google Account"
-                                        ),
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.Black
-                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.height(14.dp))
-                    }
 
-                    // Content Switcher
-                    AnimatedContent(
-                        targetState = selectedTab,
-                        label = "auth_tab_crossfade"
-                    ) { tab ->
-                        when (tab) {
-                            AuthTabSelection.PHONE_OTP -> {
-                                PhoneOtpAuthContent(
-                                    authState = authState,
-                                    activeCodeSent = activeCodeSent,
-                                    phoneNumber = phoneNumber,
-                                    otpInput = otpInput,
-                                    resendCountdown = resendCountdown,
-                                    isCountdownActive = isCountdownActive,
-                                    onPhoneChange = { authViewModel.onPhoneNumberChanged(it) },
-                                    onOtpChange = { authViewModel.onOtpChanged(it) },
-                                    onSendOtp = {
-                                        activity?.let {
-                                            focusManager.clearFocus()
-                                            authViewModel.sendPhoneOtp(it)
+                        // Smooth Tab Content Crossfade
+                        AnimatedContent(
+                            targetState = selectedTab,
+                            transitionSpec = {
+                                fadeIn(spring(stiffness = Spring.StiffnessMediumLow)) togetherWith
+                                    fadeOut(spring(stiffness = Spring.StiffnessMediumLow))
+                            },
+                            label = "auth_tab_crossfade"
+                        ) { tab ->
+                            when (tab) {
+                                AuthTabSelection.GOOGLE_AUTH -> {
+                                    GoogleAuthContent(
+                                        authState = authState,
+                                        onSignInClick = {
+                                            activity?.let { act ->
+                                                focusManager.clearFocus()
+                                                authViewModel.signInWithGoogle(act)
+                                            }
                                         }
-                                    },
-                                    onResendOtp = {
-                                        activity?.let {
-                                            authViewModel.resendPhoneOtp(it)
-                                        }
-                                    },
-                                    onVerifyOtp = {
-                                        focusManager.clearFocus()
-                                        authViewModel.verifyOtp()
-                                    },
-                                    onChangeNumber = {
-                                        activeCodeSent = null
-                                        authViewModel.resetToPhoneInput()
-                                    },
-                                    onSwitchToGoogle = {
-                                        selectedTab = AuthTabSelection.GOOGLE_AUTH
-                                        activeCodeSent = null
-                                        authViewModel.resetToPhoneInput()
-                                    }
-                                )
-                            }
+                                    )
+                                }
 
-                            AuthTabSelection.GOOGLE_AUTH -> {
-                                GoogleAuthContent(
-                                    authState = authState,
-                                    onSignInClick = {
-                                        activity?.let { act ->
+                                AuthTabSelection.PHONE_OTP -> {
+                                    PhoneOtpAuthContent(
+                                        authState = authState,
+                                        activeCodeSent = activeCodeSent,
+                                        phoneNumber = phoneNumber,
+                                        otpInput = otpInput,
+                                        resendCountdown = resendCountdown,
+                                        isCountdownActive = isCountdownActive,
+                                        onPhoneChange = { authViewModel.onPhoneNumberChanged(it) },
+                                        onOtpChange = { authViewModel.onOtpChanged(it) },
+                                        onSendOtp = {
+                                            activity?.let {
+                                                focusManager.clearFocus()
+                                                authViewModel.sendPhoneOtp(it)
+                                            }
+                                        },
+                                        onResendOtp = {
+                                            activity?.let {
+                                                authViewModel.resendPhoneOtp(it)
+                                            }
+                                        },
+                                        onVerifyOtp = {
                                             focusManager.clearFocus()
-                                            authViewModel.signInWithGoogle(act)
+                                            authViewModel.verifyOtp()
+                                        },
+                                        onChangeNumber = {
+                                            activeCodeSent = null
+                                            authViewModel.resetToPhoneInput()
+                                        },
+                                        onSwitchToGoogle = {
+                                            selectedTab = AuthTabSelection.GOOGLE_AUTH
+                                            activeCodeSent = null
+                                            authViewModel.resetToPhoneInput()
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // BOTTOM ACTIONS: Guest Access & Trust Badge
+            // BOTTOM ACTIONS: Guest CTA & Privacy Footer
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 520.dp)
             ) {
-                // Continue as guest button
-                TextButton(
+                OutlinedButton(
                     onClick = {
                         authViewModel.continueAsGuest()
                         onAuthSuccess()
                     },
-                    modifier = Modifier.testTag("continue_as_guest_button")
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(minHeight = 48.dp)
+                        .testTag("continue_as_guest_button"),
+                    shape = RoundedCornerShape(14.dp),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        Color.White.copy(alpha = 0.14f)
+                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = DarkEmeraldElevated.copy(alpha = 0.38f),
+                        contentColor = TextPrimary
+                    )
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = uiText("অতিথি হিসেবে অ্যাপ অন্বেষণ করুন", "Explore as Guest"),
-                            color = SlateGrayMuted,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = uiText("পরবর্তী", "Next"),
-                            tint = SlateGrayMuted,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
+                    Text(
+                        text = uiText("অতিথি হিসেবে অ্যাপ ঘুরে দেখুন", "Explore as Guest"),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = TextPrimary.copy(alpha = 0.9f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = uiText("পরবর্তী", "Next"),
+                        tint = ChampagneGold,
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Security & Privacy guarantee pill
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(20.dp))
-                        .background(DarkEmeraldElevated.copy(alpha = 0.6f))
+                        .background(Color(0xFF081412))
                         .border(0.5.dp, HairlineBorder, RoundedCornerShape(20.dp))
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                        .padding(horizontal = 14.dp, vertical = 7.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
@@ -570,15 +613,15 @@ fun AuthScreen(
                         imageVector = Icons.Default.Lock,
                         contentDescription = uiText("নিরাপত্তা", "Security"),
                         tint = MintGlow,
-                        modifier = Modifier.size(12.dp)
+                        modifier = Modifier.size(13.dp)
                     )
                     Text(
                         text = uiText(
-                            "১০০% বিজ্ঞাপনমুক্ত • সাদাকাহ জারিয়াহ • নিরাপদ ক্লাউড",
-                            "100% Ad-Free • Sadaqah Jariyah • Secure Cloud"
+                            "১০০% বিজ্ঞাপনমুক্ত • সাদাকাহ জারিয়াহ • এনক্রিপ্টেড ক্লাউড",
+                            "100% Ad-Free • Sadaqah Jariyah • Encrypted Cloud"
                         ),
                         color = SlateGrayMuted,
-                        fontSize = 10.sp
+                        fontSize = 11.sp
                     )
                 }
             }
@@ -587,33 +630,593 @@ fun AuthScreen(
 }
 
 @Composable
-private fun TabButton(
+private fun AuthHighlightChip(
+    icon: ImageVector,
+    label: String,
+    accent: Color
+) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(DarkEmeraldElevated.copy(alpha = 0.65f))
+            .border(0.75.dp, accent.copy(alpha = 0.25f), RoundedCornerShape(50))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = accent,
+            modifier = Modifier.size(13.dp)
+        )
+        Text(
+            text = label,
+            color = TextPrimary.copy(alpha = 0.88f),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun AuthTabButton(
+    icon: ImageVector,
     title: String,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    val bgColor by animateColorAsState(
+        targetValue = if (isSelected) ChampagneGold.copy(alpha = 0.18f) else Color.Transparent,
+        label = "tab_bg"
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (isSelected) ChampagneGold.copy(alpha = 0.7f) else Color.Transparent,
+        label = "tab_border"
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (isSelected) ChampagneGold else SlateGrayMuted,
+        label = "tab_content"
+    )
+
+    Row(
         modifier = modifier
+            .defaultMinSize(minHeight = 48.dp)
             .clip(RoundedCornerShape(10.dp))
-            .background(
-                if (isSelected) ChampagneGold.copy(alpha = 0.2f) else Color.Transparent
-            )
-            .border(
-                width = if (isSelected) 1.dp else 0.dp,
-                color = if (isSelected) ChampagneGold else Color.Transparent,
-                shape = RoundedCornerShape(10.dp)
-            )
+            .background(bgColor)
+            .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(10.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 10.dp),
-        contentAlignment = Alignment.Center
+            .padding(horizontal = 10.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = contentColor,
+            modifier = Modifier.size(17.dp)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = title,
-            color = if (isSelected) ChampagneGold else SlateGrayMuted,
-            fontSize = 12.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+            color = contentColor,
+            fontSize = 13.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
+    }
+}
+
+@Composable
+private fun AuthErrorBanner(
+    errorState: AuthState.Error,
+    context: Context,
+    activity: Activity?,
+    onDismiss: () -> Unit,
+    onGoogleFallback: () -> Unit,
+    onDebugTokenApplied: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFF3E181D))
+            .border(1.dp, Color(0xFFE57373).copy(alpha = 0.65f), RoundedCornerShape(14.dp))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ErrorOutline,
+                contentDescription = uiText("ত্রুটি", "Error"),
+                tint = Color(0xFFFFB4AB),
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .size(20.dp)
+            )
+            Text(
+                text = errorState.message,
+                color = Color.White,
+                fontSize = 12.5.sp,
+                lineHeight = 18.sp,
+                modifier = Modifier.weight(1f)
+            )
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .size(32.dp)
+                    .minimumInteractiveComponentSize()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = uiText("বন্ধ করুন", "Dismiss"),
+                    tint = Color(0xFFFFDAD6),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+
+        if (errorState.isAppCheckError && BuildConfig.DEBUG) {
+            var showDebugTokenInput by remember { mutableStateOf(false) }
+            var debugTokenText by remember {
+                mutableStateOf(getOrCreateDeviceDebugToken(context))
+            }
+            var tokenStatusMsg by remember { mutableStateOf<String?>(null) }
+
+            TextButton(
+                onClick = { showDebugTokenInput = !showDebugTokenInput },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 48.dp)
+                    .testTag("toggle_debug_token_helper_button")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.VpnKey,
+                    contentDescription = null,
+                    tint = ChampagneGold,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (showDebugTokenInput) {
+                        uiText("Debug Token অপশন লুকান", "Hide Debug Token Option")
+                    } else {
+                        uiText("এই ফোনের Debug Token দেখুন ও লগইন করুন", "Use App Check Debug Token")
+                    },
+                    color = ChampagneGold,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            if (showDebugTokenInput) {
+                val copiedMsg = uiText(
+                    "টোকেন কপি হয়েছে! এখন Firebase Console-এ পেস্ট করুন।",
+                    "Token copied! Paste it in Firebase Console."
+                )
+                val browserErrMsg = uiText(
+                    "ব্রাউজার খুলতে সমস্যা হয়েছে।",
+                    "Unable to open browser."
+                )
+                val invalidUuidMsg = uiText(
+                    "সঠিক UUID ফরম্যাটের Debug Token দিন",
+                    "Enter a valid UUID Debug Token"
+                )
+                Text(
+                    text = uiText(
+                        "১) নিচের টোকেনটি কপি করুন → ২) Firebase Console খুলে App Check → Manage debug tokens-এ যোগ করুন → ৩) নিচের বাটনে ট্যাপ করুন:",
+                        "1) Copy this token -> 2) Open Firebase Console -> App Check -> Manage debug tokens -> Add -> 3) Tap Apply & Sign In:"
+                    ),
+                    color = Color(0xFFFFE0B2),
+                    fontSize = 11.5.sp,
+                    lineHeight = 16.sp
+                )
+                OutlinedTextField(
+                    value = debugTokenText,
+                    onValueChange = { debugTokenText = it },
+                    placeholder = {
+                        Text(
+                            text = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                            color = SlateGrayMuted,
+                            fontSize = 12.sp
+                        )
+                    },
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("debug_token_input"),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = ChampagneGold,
+                        unfocusedBorderColor = HairlineBorder,
+                        focusedContainerColor = DarkEmeraldElevated,
+                        unfocusedContainerColor = DarkEmeraldElevated
+                    )
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = {
+                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                            cm?.setPrimaryClip(
+                                ClipData.newPlainText("AppCheckDebugToken", debugTokenText.trim())
+                            )
+                            tokenStatusMsg = copiedMsg
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .defaultMinSize(minHeight = 48.dp)
+                            .testTag("copy_debug_token_button"),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = uiText("কপি করুন", "Copy"),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    OutlinedButton(
+                        onClick = {
+                            try {
+                                val intent = Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(FIREBASE_APP_CHECK_CONSOLE_URL)
+                                ).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                context.startActivity(intent)
+                            } catch (_: Exception) {
+                                tokenStatusMsg = browserErrMsg
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .defaultMinSize(minHeight = 48.dp)
+                            .testTag("open_firebase_console_button"),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = ChampagneGold)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.OpenInNew,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = uiText("Firebase খুলুন", "Console"),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+                Button(
+                    onClick = {
+                        val installed = installManualDebugToken(context, debugTokenText)
+                        if (installed) {
+                            tokenStatusMsg = null
+                            showDebugTokenInput = false
+                            onDebugTokenApplied()
+                        } else {
+                            tokenStatusMsg = invalidUuidMsg
+                        }
+                    },
+                    enabled = debugTokenText.trim().length >= 16 && activity != null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(minHeight = 48.dp)
+                        .testTag("apply_debug_token_button"),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ChampagneGold,
+                        contentColor = ObsidianBackground
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(
+                        text = uiText("টোকেন সেট করুন ও গুগল লগইন করুন", "Apply Token & Sign In"),
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                tokenStatusMsg?.let { status ->
+                    Text(
+                        text = status,
+                        color = Color(0xFFFFCC80),
+                        fontSize = 11.5.sp
+                    )
+                }
+            }
+        }
+
+        if (errorState.suggestGoogleFallback && activity != null) {
+            Button(
+                onClick = onGoogleFallback,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 48.dp)
+                    .testTag("error_google_fallback_button"),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF1F1F1F)
+                )
+            ) {
+                GoogleLogoMark(modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = uiText(
+                        "গুগল একাউন্ট দিয়ে তাৎক্ষণিক লগইন করুন",
+                        "Sign in instantly with Google Account"
+                    ),
+                    fontSize = 12.5.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Crisp multi-color Google "G" emblem drawn on Canvas (no emoji, sharp on every DPI).
+ */
+@Composable
+private fun GoogleLogoMark(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val strokeWidth = size.minDimension * 0.21f
+        val inset = strokeWidth / 2f
+        val arcSize = Size(size.width - strokeWidth, size.height - strokeWidth)
+        val topLeft = Offset(inset, inset)
+
+        // Red (top)
+        drawArc(
+            color = Color(0xFFEA4335),
+            startAngle = -145f,
+            sweepAngle = 105f,
+            useCenter = false,
+            topLeft = topLeft,
+            size = arcSize,
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
+        )
+        // Yellow (left)
+        drawArc(
+            color = Color(0xFFFBBC05),
+            startAngle = 145f,
+            sweepAngle = 70f,
+            useCenter = false,
+            topLeft = topLeft,
+            size = arcSize,
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
+        )
+        // Green (bottom)
+        drawArc(
+            color = Color(0xFF34A853),
+            startAngle = 40f,
+            sweepAngle = 105f,
+            useCenter = false,
+            topLeft = topLeft,
+            size = arcSize,
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
+        )
+        // Blue (right lower curve)
+        drawArc(
+            color = Color(0xFF4285F4),
+            startAngle = -10f,
+            sweepAngle = 55f,
+            useCenter = false,
+            topLeft = topLeft,
+            size = arcSize,
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
+        )
+        // Blue horizontal bar
+        drawLine(
+            color = Color(0xFF4285F4),
+            start = Offset(size.width * 0.50f, size.height * 0.50f),
+            end = Offset(size.width * 0.96f, size.height * 0.50f),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Butt
+        )
+    }
+}
+
+/**
+ * Crisp Bangladesh flag badge drawn on Canvas for the +880 prefix pill.
+ */
+@Composable
+private fun BangladeshFlagIcon(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        drawRoundRect(
+            color = Color(0xFF006A4E),
+            cornerRadius = CornerRadius(3.dp.toPx(), 3.dp.toPx())
+        )
+        drawCircle(
+            color = Color(0xFFF42A41),
+            radius = size.minDimension * 0.28f,
+            center = Offset(size.width * 0.46f, size.height * 0.5f)
+        )
+    }
+}
+
+/**
+ * Google Sign-In Section — Refined One-Tap Card & Crisp Primary CTA
+ */
+@Composable
+private fun GoogleAuthContent(
+    authState: AuthState,
+    onSignInClick: () -> Unit
+) {
+    val isLoading = authState is AuthState.Loading
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = uiText("এক ট্যাপে নিরাপদ গুগল সাইন-ইন", "One-Tap Google Sign-In"),
+            style = MaterialTheme.typography.titleMedium.copy(
+                color = TextPrimary,
+                fontWeight = FontWeight.Bold
+            ),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = uiText(
+                "কোনো পাসওয়ার্ড লাগবে না। প্রতিটি জিমেইল একাউন্টে আপনার আমলের হিসাব আলাদাভাবে সংরক্ষিত থাকবে।",
+                "No password required. Each Google account keeps its own private worship progress in the cloud."
+            ),
+            style = MaterialTheme.typography.bodySmall.copy(
+                color = SlateGrayMuted,
+                fontSize = 12.5.sp,
+                lineHeight = 18.sp,
+                textAlign = TextAlign.Center
+            )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Concise 2-row benefit summary inside elevated panel
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(DarkEmeraldElevated.copy(alpha = 0.72f))
+                .border(1.dp, ChampagneGold.copy(alpha = 0.22f), RoundedCornerShape(16.dp))
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            AuthFeatureRow(
+                icon = Icons.Default.Sync,
+                iconTint = MintGlow,
+                title = uiText("স্বয়ংক্রিয় ক্লাউড ব্যাকআপ", "Automatic Cloud Restore"),
+                subtitle = uiText(
+                    "ফোন বদলালেও কুরআন, তাসবিহ ও নামাজের হিসাব ফিরে পাবেন",
+                    "Restore your Quran, Tasbeeh & Salah logs on any device"
+                )
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(0.5.dp)
+                    .background(HairlineBorder)
+            )
+            AuthFeatureRow(
+                icon = Icons.Default.Shield,
+                iconTint = ChampagneGold,
+                title = uiText("প্রতিটি একাউন্ট সম্পূর্ণ আলাদা", "Isolated Per-User Profile"),
+                subtitle = uiText(
+                    "নতুন একাউন্টে ০ থেকে নতুনভাবে শুরু হবে — অন্য ডেটা মিশবে না",
+                    "New accounts start clean at 0 without mixing other data"
+                )
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Primary Google Sign-In CTA Button
+        Button(
+            onClick = onSignInClick,
+            enabled = !isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .testTag("google_signin_button"),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = Color(0xFF1F1F1F),
+                disabledContainerColor = Color.White.copy(alpha = 0.65f),
+                disabledContentColor = Color(0xFF1F1F1F).copy(alpha = 0.65f)
+            ),
+            shape = RoundedCornerShape(14.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color(0xFF1F1F1F),
+                    strokeWidth = 2.2.dp
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = uiText("সাইন ইন হচ্ছে...", "Signing in..."),
+                    color = Color(0xFF1F1F1F),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+            } else {
+                GoogleLogoMark(modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = uiText("Google দিয়ে লগইন করুন", "Continue with Google"),
+                    color = Color(0xFF1F1F1F),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AuthFeatureRow(
+    icon: ImageVector,
+    iconTint: Color,
+    title: String,
+    subtitle: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(iconTint.copy(alpha = 0.14f))
+                .border(0.75.dp, iconTint.copy(alpha = 0.3f), RoundedCornerShape(10.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                color = TextPrimary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = subtitle,
+                color = SlateGrayMuted,
+                fontSize = 11.5.sp,
+                lineHeight = 15.5.sp
+            )
+        }
     }
 }
 
@@ -644,64 +1247,84 @@ private fun PhoneOtpAuthContent(
             // STEP 1: Phone number entry
             Text(
                 text = uiText("বাংলাদেশি মোবাইল নম্বর লিখুন", "Enter Bangladeshi Mobile Number"),
-                style = MaterialTheme.typography.titleSmall.copy(
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = uiText(
                     "আপনার নম্বরে ৬ সংখ্যার ফ্রি এসএমএস ওটিপি কোড পাঠানো হবে",
-                    "A 6-digit SMS OTP code will be sent to your number"
+                    "We'll send a 6-digit SMS verification code to your number"
                 ),
-                style = MaterialTheme.typography.bodySmall.copy(color = SlateGrayMuted)
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = SlateGrayMuted,
+                    fontSize = 12.5.sp
+                )
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Phone Input Row with +880 Prefix Badge
+            // Phone Input Row with Crisp BD +880 Prefix Badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // BD Prefix Badge
-                Box(
+                Row(
                     modifier = Modifier
-                        .height(54.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(14.dp))
                         .background(DarkEmeraldElevated)
-                        .border(1.dp, ChampagneGold.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                        .border(1.dp, ChampagneGold.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
                         .padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.Center
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(7.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(text = "🇧🇩", fontSize = 16.sp)
-                        Text(
-                            text = "+880",
-                            color = ChampagneGold,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    BangladeshFlagIcon(
+                        modifier = Modifier
+                            .width(22.dp)
+                            .height(15.dp)
+                    )
+                    Text(
+                        text = "+880",
+                        color = ChampagneGold,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
-                // Phone Number TextField
                 OutlinedTextField(
                     value = phoneNumber,
                     onValueChange = onPhoneChange,
                     placeholder = {
-                        Text("1712345678", color = SlateGrayMuted.copy(alpha = 0.6f), fontSize = 14.sp)
+                        Text(
+                            text = "1712345678",
+                            color = SlateGrayMuted.copy(alpha = 0.55f),
+                            fontSize = 15.sp
+                        )
+                    },
+                    trailingIcon = {
+                        if (phoneNumber.isNotEmpty()) {
+                            IconButton(
+                                onClick = { onPhoneChange("") },
+                                modifier = Modifier.minimumInteractiveComponentSize()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = uiText("মুছুন", "Clear"),
+                                    tint = SlateGrayMuted,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(54.dp)
+                        .defaultMinSize(minHeight = 56.dp)
                         .testTag("phone_number_input"),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Phone,
                         imeAction = ImeAction.Done
@@ -725,14 +1348,13 @@ private fun PhoneOtpAuthContent(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Send OTP Button
-            val isButtonEnabled = phoneNumber.length >= 10 && authState !is AuthState.Loading
+            val isButtonEnabled = phoneNumber.length >= 10 && !isLoading
             Button(
                 onClick = onSendOtp,
                 enabled = isButtonEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(52.dp)
                     .testTag("send_otp_button"),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = ChampagneGold,
@@ -740,9 +1362,9 @@ private fun PhoneOtpAuthContent(
                     disabledContainerColor = DarkEmeraldElevated,
                     disabledContentColor = SlateGrayMuted
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(14.dp)
             ) {
-                if (authState is AuthState.Loading) {
+                if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         color = ObsidianBackground,
@@ -752,78 +1374,81 @@ private fun PhoneOtpAuthContent(
                     Text(
                         text = uiText("কোড পাঠানো হচ্ছে...", "Sending code..."),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
+                        fontSize = 14.sp
                     )
                 } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = uiText("ওটিপি কোড পাঠান", "Send OTP Code"),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = uiText("পাঠান", "Send"),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
+                    Text(
+                        text = uiText("ওটিপি কোড পাঠান", "Send OTP Code"),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.5.sp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        contentDescription = uiText("পাঠান", "Send"),
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(
                 onClick = onSwitchToGoogle,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 48.dp)
             ) {
                 Text(
                     text = uiText(
-                        "এসএমএস ছাড়াই তাৎক্ষণিক গুগল একাউন্ট দিয়ে লগইন করুন →",
-                        "Sign in instantly with Google without SMS →"
+                        "এসএমএস ছাড়াই তাৎক্ষণিক গুগল একাউন্টে প্রবেশ করুন",
+                        "Sign in instantly with Google instead"
                     ),
                     color = MintGlow,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center
                 )
             }
         } else {
             // STEP 2: OTP Verification entry
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = uiText("৬ সংখ্যার ওটিপি কোড দিন", "Enter 6-Digit OTP Code"),
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold
+                        text = uiText("৬ সংখ্যার ওটিপি কোড দিন", "Enter 6-Digit OTP"),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Bold
                         )
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = uiText(
                             "${codeSentState.phoneNumber} নম্বরে পাঠানো হয়েছে",
                             "Sent to ${codeSentState.phoneNumber}"
                         ),
-                        style = MaterialTheme.typography.bodySmall.copy(color = MintGlow)
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MintGlow,
+                            fontSize = 12.sp
+                        )
                     )
                 }
 
                 TextButton(
                     onClick = onChangeNumber,
-                    modifier = Modifier.testTag("change_phone_number_button")
+                    modifier = Modifier
+                        .defaultMinSize(minHeight = 48.dp)
+                        .testTag("change_phone_number_button"),
+                    contentPadding = PaddingValues(horizontal = 8.dp)
                 ) {
                     Text(
-                        text = uiText("নম্বর পরিবর্তন", "Change Number"),
+                        text = uiText("পরিবর্তন", "Change"),
                         color = ChampagneGold,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -831,29 +1456,65 @@ private fun PhoneOtpAuthContent(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // 6-digit OTP Input TextField
+            // 6-digit visual progress slots above clean accessible OTP input
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                for (index in 0 until 6) {
+                    val ch = otpInput.getOrNull(index)?.toString() ?: ""
+                    val isCurrent = index == otpInput.length
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(DarkEmeraldElevated)
+                            .border(
+                                width = if (isCurrent || ch.isNotEmpty()) 1.5.dp else 1.dp,
+                                color = when {
+                                    ch.isNotEmpty() -> MintGlow.copy(alpha = 0.8f)
+                                    isCurrent -> ChampagneGold
+                                    else -> HairlineBorder
+                                },
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = ch.ifEmpty { "•" },
+                            color = if (ch.isNotEmpty()) ChampagneGold else SlateGrayMuted.copy(alpha = 0.4f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             OutlinedTextField(
                 value = otpInput,
                 onValueChange = onOtpChange,
                 placeholder = {
                     Text(
-                        "• • • • • •",
+                        text = uiText("এখানে ৬ সংখ্যার কোড লিখুন", "Type 6-digit code here"),
                         color = SlateGrayMuted,
-                        fontSize = 20.sp,
+                        fontSize = 14.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .defaultMinSize(minHeight = 54.dp)
                     .testTag("otp_code_input"),
-                shape = RoundedCornerShape(12.dp),
-                textStyle = MaterialTheme.typography.headlineSmall.copy(
+                shape = RoundedCornerShape(14.dp),
+                textStyle = MaterialTheme.typography.titleLarge.copy(
                     color = ChampagneGold,
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 8.sp
+                    letterSpacing = 6.sp
                 ),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.NumberPassword,
@@ -873,9 +1534,8 @@ private fun PhoneOtpAuthContent(
                 singleLine = true
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Resend link with countdown
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -888,17 +1548,26 @@ private fun PhoneOtpAuthContent(
                             "Resend available in ${resendCountdown}s"
                         ),
                         color = SlateGrayMuted,
-                        fontSize = 11.sp
+                        fontSize = 12.sp
                     )
                 } else {
                     TextButton(
                         onClick = onResendOtp,
-                        modifier = Modifier.testTag("resend_otp_button")
+                        modifier = Modifier
+                            .defaultMinSize(minHeight = 48.dp)
+                            .testTag("resend_otp_button")
                     ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null,
+                            tint = ChampagneGold,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = uiText("🔄 পুনরায় কোড পাঠান", "🔄 Resend Code"),
+                            text = uiText("পুনরায় কোড পাঠান", "Resend Code"),
                             color = ChampagneGold,
-                            fontSize = 12.sp,
+                            fontSize = 12.5.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
@@ -907,13 +1576,12 @@ private fun PhoneOtpAuthContent(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Verify Button
             Button(
                 onClick = onVerifyOtp,
                 enabled = otpInput.length == 6 && !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(52.dp)
                     .testTag("verify_otp_button"),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MintGlow,
@@ -921,7 +1589,7 @@ private fun PhoneOtpAuthContent(
                     disabledContainerColor = DarkEmeraldElevated,
                     disabledContentColor = SlateGrayMuted
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(14.dp)
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
@@ -933,171 +1601,19 @@ private fun PhoneOtpAuthContent(
                     Text(
                         text = uiText("যাচাই করা হচ্ছে...", "Verifying..."),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
+                        fontSize = 14.sp
                     )
                 } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = uiText("যাচাই", "Verify"),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = uiText("যাচাই করুন ও প্রবেশ করুন", "Verify & Continue"),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Google Sign-In Section
- */
-@Composable
-private fun GoogleAuthContent(
-    authState: AuthState,
-    onSignInClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = uiText("এক ট্যাপে গুগল দিয়ে সাইন ইন", "One-Tap Google Sign-In"),
-            style = MaterialTheme.typography.titleSmall.copy(
-                color = Color.White,
-                fontWeight = FontWeight.SemiBold
-            )
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = uiText(
-                "কোনো পাসওয়ার্ড মনে রাখার প্রয়োজন নেই। আপনার গুগল একাউন্টে স্বয়ংক্রিয়ভাবে সংরক্ষিত হবে।",
-                "No password required. Your data syncs automatically with your Google Account."
-            ),
-            style = MaterialTheme.typography.bodySmall.copy(
-                color = SlateGrayMuted,
-                textAlign = TextAlign.Center
-            )
-        )
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        // Native Google Account Picker info card
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(DarkEmeraldElevated)
-                .border(1.dp, ChampagneGold.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
-                .padding(14.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(ChampagneGold.copy(alpha = 0.2f))
-                        .border(1.dp, ChampagneGold, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "G",
-                        color = ChampagneGold,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = uiText("যাচাই", "Verify"),
+                        modifier = Modifier.size(18.dp)
                     )
-                }
-
-                Column(modifier = Modifier.weight(1f)) {
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = uiText("গুগল একাউন্ট", "Google Account"),
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = uiText(
-                            "ডিভাইসের গুগল একাউন্টে নিরাপদ ব্যাকআপ",
-                            "Secure backup via your device Google account"
-                        ),
-                        color = SlateGrayMuted,
-                        fontSize = 12.sp
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(MintGlow.copy(alpha = 0.15f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = uiText("প্রস্তুত", "Ready"),
-                        color = MintGlow,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        // Google Sign-In Button
-        Button(
-            onClick = onSignInClick,
-            enabled = authState !is AuthState.Loading,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .testTag("google_signin_button"),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,
-                contentColor = Color.Black
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            if (authState is AuthState.Loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = Color.Black,
-                    strokeWidth = 2.dp
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = uiText("সাইন ইন হচ্ছে...", "Signing in..."),
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp
-                )
-            } else {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text(
-                        text = "🌐",
-                        fontSize = 18.sp
-                    )
-                    Text(
-                        text = uiText("Google দিয়ে লগইন করুন", "Continue with Google"),
-                        color = Color.Black,
+                        text = uiText("যাচাই করুন ও প্রবেশ করুন", "Verify & Continue"),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        fontSize = 14.5.sp
                     )
                 }
             }

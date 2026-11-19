@@ -37,4 +37,7 @@ interface HadithBookmarkDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM hadith_bookmarks WHERE hadithId = :hadithId)")
     suspend fun isBookmarked(hadithId: String): Boolean
+
+    @Query("DELETE FROM hadith_bookmarks")
+    suspend fun clearAll()
 }

@@ -5330,10 +5330,19 @@ data class HarakatSampleItem(
     val meaningBengali: String,
     val audioUrl: String,
     val titleEnglish: String = "",
-    val meaningEnglish: String = ""
+    val meaningEnglish: String = "",
+    val playlistUrls: List<String> = emptyList(),
+    val reciterLabelBn: String = "শেখ মিশারী আল-আফাসী (তাজবীদসহ)",
+    val reciterLabelEn: String = "Sheikh Mishary Al-Afasy (Tajweed)"
 ) {
+    val allAudioUrls: List<String>
+        get() = if (playlistUrls.isNotEmpty()) playlistUrls else listOfNotNull(audioUrl.takeIf { it.isNotBlank() })
+
     fun localizedTitle(lang: String): String =
         LocalizationRegistry.translate(lang, title, titleEnglish.ifBlank { title })
+
+    fun localizedReciter(lang: String): String =
+        LocalizationRegistry.translate(lang, reciterLabelBn, reciterLabelEn)
 
     fun localizedTransliteration(contentLang: String): String =
         if (com.example.data.util.SupportedLanguage.normalizeCode(contentLang) == "bn") {
@@ -5367,9 +5376,11 @@ val HARAKAT_SAMPLES = listOf(
         transliterationBengali = "আল্লা-হুম্মা আনতা রব্বী লা- ইলা-হা ইল্লা- আনতা, খলাক্বতানী ওয়া আনা ‘আবদুকা, ওয়া আনা ‘আলা- ‘আহ্‌দিকা ওয়া ওয়া‘দিকা মাসতাত্বা‘তু, আ‘ঊযু বিকা মিন শাররি মা- সনা‘তু, আবূউ লাকা বিনি‘মাতিকা ‘আলাইয়্যা, ওয়া আবূউ বিযানবী ফাগফির লী ফা-ইন্নাহূ লা- ইয়্যাগফিরুয যুনূবা ইল্লা- আনতা।",
         transliterationEnglish = "Allahumma Anta Rabbi la ilaha illa Anta, khalaqtani wa ana 'abduka, wa ana 'ala 'ahdika wa wa'dika mastata'tu, a'udhu bika min sharri ma sana'tu, abu'u laka bini'matika 'alayya, wa abu'u bidhanbi faghfir li fa-innahu la yaghfirudh-dhunuba illa Anta.",
         meaningBengali = "হে আল্লাহ! আপনিই আমার প্রতিপালক। আপনি ছাড়া কোনো সত্য ইলাহ নেই। আপনি আমাকে সৃষ্টি করেছেন এবং আমি আপনার বান্দা।",
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/001001.mp3",
+        audioUrl = "https://www.hisnmuslim.com/audio/ar/79.mp3",
         titleEnglish = "Sayyidul Istighfar",
-        meaningEnglish = "O Allah, You are my Lord; there is none worthy of worship except You. You created me and I am Your servant."
+        meaningEnglish = "O Allah, You are my Lord; there is none worthy of worship except You. You created me and I am Your servant.",
+        reciterLabelBn = "হিসনুল মুসলিম ক্বারী (পুরুষ কণ্ঠ)",
+        reciterLabelEn = "Hisnul Muslim Reciter (Male)"
     ),
     HarakatSampleItem(
         title = "সূরা আল-ইখলাস (১১২)",
@@ -5379,7 +5390,13 @@ val HARAKAT_SAMPLES = listOf(
         meaningBengali = "বলুন, তিনিই আল্লাহ, একক অদ্বিতীয়। আল্লাহ কারো মুখাপেক্ষী নন। তিনি কাউকে জন্ম দেননি এবং তাঁকেও জন্ম দেওয়া হয়নি।",
         audioUrl = "https://everyayah.com/data/Alafasy_128kbps/112001.mp3",
         titleEnglish = "Surah Al-Ikhlas (112)",
-        meaningEnglish = "Say, 'He is Allah, [who is] One, Allah, the Eternal Refuge. He neither begets nor is born, nor is there to Him any equivalent.'"
+        meaningEnglish = "Say, 'He is Allah, [who is] One, Allah, the Eternal Refuge. He neither begets nor is born, nor is there to Him any equivalent.'",
+        playlistUrls = listOf(
+            "https://everyayah.com/data/Alafasy_128kbps/112001.mp3",
+            "https://everyayah.com/data/Alafasy_128kbps/112002.mp3",
+            "https://everyayah.com/data/Alafasy_128kbps/112003.mp3",
+            "https://everyayah.com/data/Alafasy_128kbps/112004.mp3"
+        )
     ),
     HarakatSampleItem(
         title = "ইউনুস (আঃ)-এর দু'আ",
@@ -5387,9 +5404,11 @@ val HARAKAT_SAMPLES = listOf(
         transliterationBengali = "লা- ইলা-হা ইল্লা- আনতা সুবহা-নাকা ইন্নী কুনতু মিনায য-লিমীন।",
         transliterationEnglish = "La ilaha illa Anta subhanaka inni kuntu minaz-zalimeen.",
         meaningBengali = "আপনি ব্যতীত কোনো সত্য উপাস্য নেই; আপনি পরম পবিত্র! নিশ্চয়ই আমি অপরাধীদের অন্তর্ভুক্ত হয়ে গেছি।",
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/021087.mp3",
+        audioUrl = "https://www.hisnmuslim.com/audio/ar/124.mp3",
         titleEnglish = "Du'a of Yunus (AS)",
-        meaningEnglish = "There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers."
+        meaningEnglish = "There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers.",
+        reciterLabelBn = "হিসনুল মুসলিম ক্বারী (পুরুষ কণ্ঠ)",
+        reciterLabelEn = "Hisnul Muslim Reciter (Male)"
     ),
     HarakatSampleItem(
         title = "দরূদে ইব্রাহিম",
@@ -5397,9 +5416,11 @@ val HARAKAT_SAMPLES = listOf(
         transliterationBengali = "আল্লা-হুম্মা সল্লি ‘আলা- মুহাম্মাদিঁও ওয়া ‘আলা- আ-লি মুহাম্মাদ, কামা- সল্লাইতা ‘আলা- ইবরা-হীমা ওয়া ‘আলা- আ-লি ইবরা-হীম, ইন্নাকা হামীদুম মাজীদ।",
         transliterationEnglish = "Allahumma salli 'ala Muhammadin wa 'ala aali Muhammad, kama sallayta 'ala Ibraheema wa 'ala aali Ibraheem, innaka Hameedum Majeed.",
         meaningBengali = "হে আল্লাহ! মুহাম্মদ (সাঃ) ও তাঁর পরিবারের ওপর রহমত বর্ষণ করুন, যেমন আপনি ইব্রাহিম (আঃ) ও তাঁর পরিবারের ওপর রহমত বর্ষণ করেছিলেন।",
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/033056.mp3",
+        audioUrl = "https://www.hisnmuslim.com/audio/ar/53.mp3",
         titleEnglish = "Durood Ibrahim",
-        meaningEnglish = "O Allah, send blessings upon Muhammad and the family of Muhammad, as You sent blessings upon Ibrahim and the family of Ibrahim; indeed You are Praiseworthy and Glorious."
+        meaningEnglish = "O Allah, send blessings upon Muhammad and the family of Muhammad, as You sent blessings upon Ibrahim and the family of Ibrahim; indeed You are Praiseworthy and Glorious.",
+        reciterLabelBn = "হিসনুল মুসলিম ক্বারী (পুরুষ কণ্ঠ)",
+        reciterLabelEn = "Hisnul Muslim Reciter (Male)"
     ),
     HarakatSampleItem(
         title = "সুবহানাল্লাহি ওয়া বিহামদিহি",
@@ -5407,9 +5428,11 @@ val HARAKAT_SAMPLES = listOf(
         transliterationBengali = "সুবহা-নাল্লা-হি ওয়া বিহামদিহী, সুবহা-নাল্লা-হিল ‘আযীম।",
         transliterationEnglish = "Subhanallahi wa bihamdihi, Subhanallahil-'Azeem.",
         meaningBengali = "আল্লাহর পবিত্রতা ঘোষণা করছি তাঁর প্রশংসার সাথে, মহান আল্লাহ পবিত্র।",
-        audioUrl = "",
+        audioUrl = "https://www.hisnmuslim.com/audio/ar/91.mp3",
         titleEnglish = "SubhanAllahi wa Bihamdihi",
-        meaningEnglish = "Glory and praise be to Allah, Glory be to Allah the Supreme."
+        meaningEnglish = "Glory and praise be to Allah, Glory be to Allah the Supreme.",
+        reciterLabelBn = "হিসনুল মুসলিম ক্বারী (পুরুষ কণ্ঠ)",
+        reciterLabelEn = "Hisnul Muslim Reciter (Male)"
     ),
     HarakatSampleItem(
         title = "ইলম বৃদ্ধির দু'আ",
@@ -5417,7 +5440,7 @@ val HARAKAT_SAMPLES = listOf(
         transliterationBengali = "রব্বি যিদনী ‘ইলমা-।",
         transliterationEnglish = "Rabbi zidnee 'ilma.",
         meaningBengali = "হে আমার প্রতিপালক! আমার জ্ঞান বৃদ্ধি করে দিন। (সূরা ত্বা-হা: ১১৪)",
-        audioUrl = "",
+        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/020114.mp3",
         titleEnglish = "Du'a for Knowledge",
         meaningEnglish = "My Lord, increase me in knowledge. (Surah Ta-Ha: 114)"
     ),
@@ -5427,9 +5450,11 @@ val HARAKAT_SAMPLES = listOf(
         transliterationBengali = "লা- হাওলা ওয়ালা- ক্বুওয়াতা ইল্লা- বিল্লা-হিল ‘আলিইয়্যিল ‘আযীম।",
         transliterationEnglish = "La hawla wa la quwwata illa billahil-'Aliyyil-'Azeem.",
         meaningBengali = "আল্লাহ ছাড়া অনিষ্ট দূর করার এবং কল্যাণ লাভ করার কোনো শক্তি কারো নেই।",
-        audioUrl = "",
+        audioUrl = "https://www.hisnmuslim.com/audio/ar/260.mp3",
         titleEnglish = "La Hawla wa La Quwwata",
-        meaningEnglish = "There is no power nor strength except through Allah, the Most High, the Supreme."
+        meaningEnglish = "There is no power nor strength except through Allah, the Most High, the Supreme.",
+        reciterLabelBn = "হিসনুল মুসলিম ক্বারী (পুরুষ কণ্ঠ)",
+        reciterLabelEn = "Hisnul Muslim Reciter (Male)"
     )
 )
 
@@ -5463,14 +5488,22 @@ fun ArabicPronunciationTrainerStudioView(
             } else ""
         )
     }
-    var currentAudioUrl by remember { mutableStateOf(HARAKAT_SAMPLES[0].audioUrl) }
+    var currentAudioUrls by remember { mutableStateOf(HARAKAT_SAMPLES[0].allAudioUrls) }
     var fontSizeSp by remember { mutableStateOf(24) }
     var speechRate by remember { mutableStateOf(0.85f) }
-    var selectedMode by remember { mutableStateOf(ArabicAudioEngineMode.TTS_MALE) }
+    var selectedMode by remember { mutableStateOf(ArabicAudioEngineMode.QARI_RECITER) }
     var validationError by remember { mutableStateOf<String?>(null) }
     var isCopied by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+
+    // Surface audio player / TTS errors immediately so playback never fails silently
+    LaunchedEffect(playbackState.error, ttsState.errorMessage) {
+        val err = playbackState.error ?: if (selectedMode == ArabicAudioEngineMode.TTS_MALE) ttsState.errorMessage else null
+        if (!err.isNullOrBlank()) {
+            validationError = err
+        }
+    }
 
     LaunchedEffect(customArabicText, contentLang, selectedIndex) {
         val preset = HARAKAT_SAMPLES.getOrNull(selectedIndex)
@@ -5487,7 +5520,7 @@ fun ArabicPronunciationTrainerStudioView(
         }
     }
 
-    val isSpeakingOrPlaying = ttsState.isSpeaking || playbackState.isPlaying
+    val isSpeakingOrPlaying = ttsState.isSpeaking || playbackState.isPlaying || playbackState.isBuffering
 
     val harakatButtons = remember(uiLang) {
         listOf(
@@ -5515,6 +5548,7 @@ fun ArabicPronunciationTrainerStudioView(
             return
         }
         validationError = null
+        audioPlayer.clearError()
 
         if (isSpeakingOrPlaying) {
             toolsViewModel.stopTts()
@@ -5522,27 +5556,28 @@ fun ArabicPronunciationTrainerStudioView(
             return
         }
 
-        if (selectedMode == ArabicAudioEngineMode.TTS_MALE) {
+        val activePreset = HARAKAT_SAMPLES.getOrNull(selectedIndex)
+        val presetMatchesInput = activePreset != null && trimmed == activePreset.arabicWithHarakat.trim()
+        val presetUrls = if (presetMatchesInput) currentAudioUrls else emptyList()
+
+        if (selectedMode == ArabicAudioEngineMode.QARI_RECITER && presetUrls.isNotEmpty()) {
+            toolsViewModel.stopTts()
+            audioPlayer.setSpeed(speechRate)
+            toolsViewModel.playTilawatSample(
+                urls = presetUrls,
+                title = activePreset?.localizedTitle(uiLang) ?: localizedText(uiLang, "সহীহ উচ্চারণ", "Authentic Pronunciation"),
+                subtitle = activePreset?.localizedReciter(uiLang) ?: localizedText(uiLang, "শেখ মিশারী আল-আফাসী (তাজবীদসহ)", "Sheikh Mishary Al-Afasy (Tajweed)"),
+                fallbackArabicText = trimmed
+            )
+        } else {
             audioPlayer.stop()
             val ok = toolsViewModel.speakArabic(trimmed, speed = speechRate)
-            if (!ok && ttsState.errorMessage != null) {
-                validationError = ttsState.errorMessage
-            }
-        } else {
-            toolsViewModel.stopTts()
-            if (currentAudioUrl.isNotBlank()) {
-                audioPlayer.playAudio(
-                    url = currentAudioUrl,
-                    title = localizedText(uiLang, "সহীহ উচ্চারণ", "Authentic Pronunciation"),
-                    subtitle = localizedText(uiLang, "শেখ মিশারী আল-আফাসী (তাজবীদসহ)", "Sheikh Mishary Al-Afasy (Tajweed)"),
-                    fallbackArabicText = trimmed,
-                    ttsManager = toolsViewModel.ttsManager
+            if (!ok) {
+                validationError = toolsViewModel.ttsState.value.errorMessage ?: localizedText(
+                    uiLang,
+                    "এই ডিভাইসে আরবি টিটিএস প্যাক প্রস্তুত নয় — নিচ থেকে নির্বাচিত আয়াত ও দু'আ শুনুন অথবা TTS সেটিংস থেকে আরবি ভয়েস ইনস্টল করুন।",
+                    "Arabic TTS voice pack is not installed — use Selected Ayah & Du'a mode or install Arabic voice in TTS Settings."
                 )
-            } else {
-                val ok = toolsViewModel.speakArabic(trimmed, speed = speechRate)
-                if (!ok && ttsState.errorMessage != null) {
-                    validationError = ttsState.errorMessage
-                }
             }
         }
     }
@@ -5611,21 +5646,27 @@ fun ArabicPronunciationTrainerStudioView(
                                 )
                             )
                             Row(verticalAlignment = Alignment.CenterVertically) {
+                                val studioReady = selectedMode == ArabicAudioEngineMode.QARI_RECITER || ttsState.isInitialized
                                 Box(
                                     modifier = Modifier
                                         .size(7.dp)
                                         .clip(CircleShape)
-                                        .background(if (ttsState.isInitialized) MintGlow else Color(0xFFFFB4BA))
+                                        .background(if (studioReady) MintGlow else Color(0xFFFFB4BA))
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = if (ttsState.isInitialized) {
-                                        uiText("সুললিত আরবি কণ্ঠ", "Arabic Voice Ready")
-                                    } else {
-                                        uiText("অডিও প্রস্তুত হচ্ছে...", "Initializing audio...")
+                                    text = when {
+                                        selectedMode == ArabicAudioEngineMode.QARI_RECITER && currentAudioUrls.isNotEmpty() ->
+                                            uiText("স্টুডিও ক্বারী অডিও প্রস্তুত (পুরুষ কণ্ঠ)", "Studio Male Qari Ready")
+                                        ttsState.isInitialized ->
+                                            uiText("সুললিত আরবি পুরুষ কণ্ঠ প্রস্তুত", "Arabic Male Voice Ready")
+                                        ttsState.requiresLanguageData ->
+                                            uiText("কাস্টম টেক্সটের জন্য আরবি ভয়েস প্যাক লাগবে", "Install Arabic voice for custom text")
+                                        else ->
+                                            uiText("অডিও প্রস্তুত হচ্ছে...", "Initializing audio...")
                                     },
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = if (ttsState.isInitialized) MintGlow else SlateGrayMuted,
+                                        color = if (studioReady) MintGlow else SlateGrayMuted,
                                         fontSize = 11.sp
                                     )
                                 )
@@ -5838,7 +5879,8 @@ fun ArabicPronunciationTrainerStudioView(
                                     customArabicText = item.arabicWithHarakat
                                     customTransliteration = item.localizedTransliteration(contentLang)
                                     customMeaning = item.localizedMeaning(contentLang)
-                                    currentAudioUrl = item.audioUrl
+                                    currentAudioUrls = item.allAudioUrls
+                                    selectedMode = ArabicAudioEngineMode.QARI_RECITER
                                     validationError = null
                                 }
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
@@ -5883,7 +5925,8 @@ fun ArabicPronunciationTrainerStudioView(
                                             selectedIndex = -1
                                             customArabicText = pasted
                                             customMeaning = ""
-                                            currentAudioUrl = ""
+                                            currentAudioUrls = emptyList()
+                                            selectedMode = ArabicAudioEngineMode.TTS_MALE
                                             validationError = null
                                         }
                                     }
@@ -5909,7 +5952,7 @@ fun ArabicPronunciationTrainerStudioView(
                                         customArabicText = ""
                                         customTransliteration = ""
                                         customMeaning = ""
-                                        currentAudioUrl = ""
+                                        currentAudioUrls = emptyList()
                                         validationError = null
                                     },
                                     colors = ButtonDefaults.buttonColors(
@@ -5936,7 +5979,8 @@ fun ArabicPronunciationTrainerStudioView(
                             if (selectedIndex in HARAKAT_SAMPLES.indices && it.trim() != HARAKAT_SAMPLES[selectedIndex].arabicWithHarakat.trim()) {
                                 selectedIndex = -1
                                 customMeaning = ""
-                                currentAudioUrl = ""
+                                currentAudioUrls = emptyList()
+                                selectedMode = ArabicAudioEngineMode.TTS_MALE
                             }
                             customArabicText = it
                             if (it.isNotBlank()) validationError = null

@@ -34,4 +34,7 @@ interface MonthlyWorshipDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(entity: MonthlyWorshipEntity)
+
+    @Query("DELETE FROM monthly_worship")
+    suspend fun clearAll()
 }

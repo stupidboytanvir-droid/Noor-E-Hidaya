@@ -43,7 +43,6 @@ fun SpiritualHabitInsightsCard(
     val recent6Months = remember(
         monthlyHistory,
         quranMinutesToday,
-        duasReadCount,
         totalTasbihCount,
         salawatTotal,
         hadithMinutes,
@@ -54,12 +53,11 @@ fun SpiritualHabitInsightsCard(
         last6.mapIndexed { idx, entity ->
             val effectiveTotal = if (idx == last6.lastIndex) {
                 maxOf(entity.tasbihCount, totalTasbihCount) +
-                    maxOf(entity.duaCount, duasReadCount) +
                     maxOf(entity.duroodCount, salawatTotal) +
                     maxOf(entity.quranMinutes, quranMinutesToday) +
                     maxOf(entity.hadithMinutes, hadithMinutes)
             } else {
-                entity.tasbihCount + entity.duaCount + entity.duroodCount + entity.quranMinutes + entity.hadithMinutes
+                entity.tasbihCount + entity.duroodCount + entity.quranMinutes + entity.hadithMinutes
             }
             val label = WorshipTrackerRepository.formatYearMonth(entity.yearMonth, uiLang, short = true)
                 .substringBefore("'")
@@ -245,7 +243,7 @@ fun SpiritualHabitInsightsCard(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Live 5-Category Counters Strip (Du'a, Tasbih, Durood, Hadith)
+        // Live Counters Strip (Tasbih, Durood, Hadith)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -256,7 +254,6 @@ fun SpiritualHabitInsightsCard(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            MiniInsightStat(uiText("🤲 দু'আ", "🤲 Du'a"), WorshipTrackerRepository.formatDigits(duasReadCount.toString(), uiLang))
             MiniInsightStat(uiText("📿 তাসবীহ", "📿 Tasbih"), WorshipTrackerRepository.formatDigits(totalTasbihCount.toString(), uiLang))
             MiniInsightStat(uiText("💚 দরূদ", "💚 Durood"), WorshipTrackerRepository.formatDigits(salawatTotal.toString(), uiLang))
             MiniInsightStat(

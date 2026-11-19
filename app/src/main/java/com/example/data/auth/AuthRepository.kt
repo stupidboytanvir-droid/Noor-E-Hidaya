@@ -574,8 +574,9 @@ class AuthRepository(
     }
 
     private suspend fun completeSuccessfulLogin(session: UserSession) {
+        val previousUid = appPreferences.userId.first()
         val existingPhoto = appPreferences.userPhotoUrl.first()?.takeIf { it.isNotBlank() }
-        val finalPhoto = if (existingPhoto != null && existingPhoto.startsWith("data:image")) {
+        val finalPhoto = if (previousUid == session.uid && existingPhoto != null && existingPhoto.startsWith("data:image")) {
             existingPhoto
         } else {
             session.photoUrl

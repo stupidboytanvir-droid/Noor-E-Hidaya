@@ -30,6 +30,12 @@ interface AmalDao {
     @Query("SELECT * FROM daily_amal ORDER BY dateString DESC LIMIT 7")
     fun getRecentWeekAmal(): Flow<List<AmalEntity>>
 
+    @Query("SELECT * FROM daily_amal ORDER BY dateString DESC LIMIT 30")
+    suspend fun getAllRecentAmals(): List<AmalEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveAmal(amal: AmalEntity)
+
+    @Query("DELETE FROM daily_amal")
+    suspend fun clearAll()
 }

@@ -33,4 +33,7 @@ interface BookmarkDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM quran_bookmarks WHERE `key` = :key)")
     suspend fun isBookmarked(key: String): Boolean
+
+    @Query("DELETE FROM quran_bookmarks")
+    suspend fun clearAll()
 }

@@ -85,7 +85,19 @@ class TasbeehViewModel(application: Application) : AndroidViewModel(application)
             prefs.uiLanguage.collect { _uiLanguage.value = it }
         }
         observeCustomDhikrs()
+        observeAccountOwnerChanges()
         loadPreset(DEFAULT_PRESETS[0])
+    }
+
+    private fun observeAccountOwnerChanges() {
+        viewModelScope.launch(Dispatchers.IO) {
+            prefs.activeDataOwnerUid.collect {
+                // Reload active preset immediately whenever user logs in, switches account, or signs out
+                val current = _uiState.value.currentPreset
+                val fallbackPreset = if (current.isCustom) DEFAULT_PRESETS[0] else current
+                loadPreset(fallbackPreset)
+            }
+        }
     }
 
     private fun observeCustomDhikrs() {
@@ -104,6 +116,39 @@ class TasbeehViewModel(application: Application) : AndroidViewModel(application)
                         )
                     }
                 _customDhikrs.value = customList
+
+                // Keep active counter in sync with DB resets or cloud restores
+                val activeId = _uiState.value.currentPreset.id
+                val matching = entities.find { it.id == activeId }
+                if (matching == null && entities.isEmpty()) {
+                    _uiState.update { state ->
+                        val resetPreset = if (state.currentPreset.isCustom) DEFAULT_PRESETS[0] else state.currentPreset
+                        state.copy(
+                            currentPreset = resetPreset,
+                            currentCount = 0,
+                            completedRounds = 0,
+                            targetCount = resetPreset.target,
+                            totalCount = 0L,
+                            roundCelebrationMessage = null
+                        )
+                    }
+                } else if (matching != null) {
+                    _uiState.update { state ->
+                        if (state.currentCount != matching.currentCount ||
+                            state.completedRounds != matching.completedRounds ||
+                            state.totalCount != matching.totalHistoricalCount
+                        ) {
+                            state.copy(
+                                currentCount = matching.currentCount,
+                                completedRounds = matching.completedRounds,
+                                targetCount = matching.targetCount,
+                                totalCount = matching.totalHistoricalCount
+                            )
+                        } else {
+                            state
+                        }
+                    }
+                }
             }
         }
     }
@@ -283,9 +328,7 @@ class TasbeehViewModel(application: Application) : AndroidViewModel(application)
                 updatedAt = System.currentTimeMillis()
             )
             tasbihDao.insertOrUpdate(entity)
-            if (entity.isCustom) {
-                cloudSyncRepo.autoSyncCustomZikr(entity)
-            }
+            cloudSyncRepo.autoSyncZikr(entity)
             if (recordTap) {
                 worshipTracker.recordTasbihCount(1, isDurood = isDurood)
             }

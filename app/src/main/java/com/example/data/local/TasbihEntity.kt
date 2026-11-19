@@ -41,4 +41,7 @@ interface TasbihDao {
 
     @Query("DELETE FROM tasbih_counters WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM tasbih_counters")
+    suspend fun clearAll()
 }

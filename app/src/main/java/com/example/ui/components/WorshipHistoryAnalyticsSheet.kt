@@ -175,7 +175,7 @@ fun WorshipHistoryAnalyticsContent(
                             )
                         )
                         Text(
-                            text = uiText("কুরআন, দু'আ, তাসবীহ, দরূদ ও হাদিসের মাসিক চার্ট", "Monthly trends for Quran, Du'a, Tasbih, Durood & Hadith"),
+                            text = uiText("কুরআন, তাসবীহ, দরূদ ও হাদিসের মাসিক চার্ট", "Monthly trends for Quran, Tasbih, Durood & Hadith"),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = SlateGrayMuted,
                                 fontSize = 11.sp
@@ -195,13 +195,13 @@ fun WorshipHistoryAnalyticsContent(
             }
         }
 
-        // 5 Category Selector Chips
+        // 4 Category Selector Chips (Quran, Tasbih, Durood, Hadith)
         item {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(WorshipCategory.entries) { cat ->
+                items(WorshipCategory.CHART_CATEGORIES) { cat ->
                     val isSelected = selectedCategory == cat
                     Row(
                         modifier = Modifier
@@ -530,7 +530,6 @@ private fun MonthlyHistoryRowCard(
                 uiText("📖 কুরআন", "📖 Quran"),
                 uiText("${WorshipTrackerRepository.toBengaliDigits(entity.quranMinutes.toString())} মি.", "${entity.quranMinutes}m")
             )
-            MonthMetricMini(uiText("🤲 দু'আ", "🤲 Du'a"), WorshipTrackerRepository.formatDigits(entity.duaCount.toString(), uiLang))
             MonthMetricMini(uiText("📿 তাসবীহ", "📿 Tasbih"), WorshipTrackerRepository.formatDigits(entity.tasbihCount.toString(), uiLang))
             MonthMetricMini(uiText("💚 দরূদ", "💚 Durood"), WorshipTrackerRepository.formatDigits(entity.duroodCount.toString(), uiLang))
             MonthMetricMini(

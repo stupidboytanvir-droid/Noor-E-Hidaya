@@ -70,8 +70,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     state.user.provider != com.example.data.auth.AuthProviderType.GUEST
                 ) {
                     launch(kotlinx.coroutines.Dispatchers.IO) {
-                        cloudSyncRepo.restoreUserDataFromCloud(state.user.uid)
-                        cloudSyncRepo.syncProfileAndStats(state.user)
+                        cloudSyncRepo.switchAccountAndSync(state.user)
                     }
                 }
             }
@@ -193,6 +192,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun continueAsGuest() {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            cloudSyncRepo.prepareLocalStorageForAccount(AppPreferences.GUEST_DATA_OWNER)
+        }
         repository.continueAsGuest()
     }
 
@@ -200,6 +202,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _phoneNumberInput.value = ""
         _otpInput.value = ""
         _currentVerificationId.value = null
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            cloudSyncRepo.resetLocalDataOnSignOut()
+        }
         repository.signOut()
     }
 

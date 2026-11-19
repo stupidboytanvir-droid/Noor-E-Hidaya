@@ -402,6 +402,45 @@ fun DuaScreen(
                     }
                 }
 
+                // Inline Audio Error Banner (never fail silently)
+                if (!playbackState.error.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF3A181C))
+                            .border(0.75.dp, Color(0xFFFFB4BA).copy(alpha = 0.45f), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 12.dp, vertical = 9.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.VolumeOff,
+                            contentDescription = null,
+                            tint = Color(0xFFFFB4BA),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = playbackState.error ?: "",
+                            color = Color(0xFFFFD6DA),
+                            fontSize = 11.5.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(
+                            onClick = { audioPlayer.clearError() },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = uiText("বন্ধ করুন", "Dismiss"),
+                                tint = Color(0xFFFFB4BA),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Filtered Duas List
@@ -456,27 +495,34 @@ fun DuaScreen(
                                         audioPlayer.stop()
                                     }
                                 } else {
+                                    audioPlayer.clearError()
                                     ttsManager?.stop()
                                     speakingDuaId = null
-                                    val reciterSubtitle = localizedText(
+                                    val qariSubtitle = localizedText(
                                         uiLang,
                                         "শেখ মিশারী আল-আফাসী (বিশুদ্ধ তিলাওয়াত)",
                                         "Sheikh Mishary Al-Afasy (Recitation)"
                                     )
+                                    val hisnSubtitle = localizedText(
+                                        uiLang,
+                                        "হিসনুল মুসলিম ক্বারী (পুরুষ কণ্ঠ)",
+                                        "Hisnul Muslim Reciter (Male)"
+                                    )
                                     val playlistItems = subScreenDuas.mapNotNull { item ->
                                         val title = item.localizedTitle(contentLang)
-                                        val (primary, backups) = if (item.audioUrl.isNotBlank()) {
-                                            item.audioUrl to emptyList()
-                                        } else {
-                                            audioPlayer.buildArabicTtsUrls(item.textArabic)
-                                        }
+                                        val primary = item.audioUrl
                                         if (primary.isBlank()) return@mapNotNull null
+                                        val subtitle = if (primary.contains("hisnmuslim", ignoreCase = true)) {
+                                            hisnSubtitle
+                                        } else {
+                                            qariSubtitle
+                                        }
                                         com.example.data.audio.AudioTrackItem(
                                             url = primary,
                                             title = title,
-                                            subtitle = if (item.audioUrl.isNotBlank()) reciterSubtitle else item.localizedCategory(uiLang),
+                                            subtitle = subtitle,
                                             mediaId = "dua_${item.id}",
-                                            fallbackUrls = backups,
+                                            fallbackUrls = emptyList(),
                                             fallbackArabicText = item.textArabic
                                         )
                                     }
@@ -489,16 +535,14 @@ fun DuaScreen(
                                             ttsManager = ttsManager
                                         )
                                     } else {
-                                        audioPlayer.playArabicTextSpeech(
+                                        val ok = audioPlayer.playArabicTextSpeech(
                                             text = dua.textArabic,
                                             title = duaTitle,
                                             subtitle = dua.localizedCategory(uiLang),
                                             ttsManager = ttsManager,
                                             preferOnline = true
                                         )
-                                    }
-                                    coroutineScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                                        worshipTracker.recordDuaEngagement(1)
+                                        if (ok) speakingDuaId = dua.id
                                     }
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 }

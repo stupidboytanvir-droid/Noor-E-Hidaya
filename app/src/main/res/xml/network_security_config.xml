@@ -21,6 +21,7 @@
         <domain includeSubdomains="true">fastly.net</domain>
         <domain includeSubdomains="true">openstreetmap.org</domain>
         <domain includeSubdomains="true">everyayah.com</domain>
+        <domain includeSubdomains="true">hisnmuslim.com</domain>
         <domain includeSubdomains="true">quran.com</domain>
         <domain includeSubdomains="true">islamic.network</domain>
         <domain includeSubdomains="true">quranicaudio.com</domain>

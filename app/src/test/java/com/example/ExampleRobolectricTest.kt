@@ -280,8 +280,13 @@ class ExampleRobolectricTest {
     val duas = com.example.data.model.DuaRepository.DUAS
     assertTrue(duas.isNotEmpty())
     assertTrue(duas.all { it.transliterationBengali.isNotBlank() })
-    val quranicDua = duas.firstOrNull { it.audioUrl.isNotEmpty() }
-    assertTrue(quranicDua != null && quranicDua.audioUrl.startsWith("https://everyayah.com/data/"))
+    val firstAudioDua = duas.firstOrNull { it.audioUrl.isNotEmpty() }
+    assertTrue(
+      firstAudioDua != null &&
+        (firstAudioDua.audioUrl.startsWith("https://www.hisnmuslim.com/audio/ar/") ||
+          firstAudioDua.audioUrl.startsWith("https://everyayah.com/data/"))
+    )
+    assertTrue(duas.any { it.audioUrl.startsWith("https://everyayah.com/data/") })
   }
 
   @Test

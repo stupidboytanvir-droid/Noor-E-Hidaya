@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 
 sealed class SyncStatus {
@@ -42,6 +44,7 @@ class CloudSyncRepository(
 ) {
     companion object {
         private const val TAG = "CloudSyncRepository"
+        private val accountSwitchMutex = Mutex()
     }
 
     private val db: FirebaseFirestore? by lazy {
@@ -183,10 +186,55 @@ class CloudSyncRepository(
     }
 
     /**
-     * Zero-click real-time background sync for custom Tasbeeh / Dhikr items
+     * Zero-click real-time background sync for Daily 5-Prayer Amal tracker
+     */
+    fun autoSyncDailyPrayerAmal(amal: com.example.data.local.AmalEntity) {
+        bgScope.launch {
+            val uid = getActiveUserId() ?: return@launch
+            syncDailyPrayerAmalToCloud(uid, amal)
+        }
+    }
+
+    suspend fun syncDailyPrayerAmalToCloud(
+        userId: String,
+        amal: com.example.data.local.AmalEntity
+    ) {
+        val firestore = db ?: return
+        if (userId.isEmpty() || amal.dateString.isBlank()) return
+
+        try {
+            val data = hashMapOf(
+                "date" to amal.dateString,
+                "fajr" to amal.fajr,
+                "dhuhr" to amal.dhuhr,
+                "asr" to amal.asr,
+                "maghrib" to amal.maghrib,
+                "isha" to amal.isha,
+                "tahajjud" to amal.tahajjud,
+                "surahKahf" to amal.surahKahf,
+                "tasbeehDone" to amal.tasbeehDone,
+                "updatedAt" to System.currentTimeMillis()
+            )
+            firestore.collection("users")
+                .document(userId)
+                .collection("amalRecords")
+                .document(amal.dateString)
+                .set(data, SetOptions.merge())
+                .await()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to sync daily prayer amal: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Zero-click real-time background sync for ALL Tasbeeh / Dhikr counters (built-in presets & custom)
      */
     fun autoSyncCustomZikr(entity: com.example.data.local.TasbihEntity) {
-        if (!entity.isCustom) return
+        autoSyncZikr(entity)
+    }
+
+    fun autoSyncZikr(entity: com.example.data.local.TasbihEntity) {
+        if (entity.id.isBlank()) return
         bgScope.launch {
             val uid = getActiveUserId() ?: return@launch
             syncCustomZikrToCloud(uid, entity)
@@ -194,7 +242,7 @@ class CloudSyncRepository(
     }
 
     fun autoRemoveCustomZikr(zikrId: String) {
-        if (!zikrId.startsWith("custom_")) return
+        if (zikrId.isBlank()) return
         bgScope.launch {
             val uid = getActiveUserId() ?: return@launch
             removeCustomZikrFromCloud(uid, zikrId)
@@ -206,7 +254,7 @@ class CloudSyncRepository(
         entity: com.example.data.local.TasbihEntity
     ) {
         val firestore = db ?: return
-        if (userId.isEmpty() || !entity.isCustom || entity.id.isBlank()) return
+        if (userId.isEmpty() || entity.id.isBlank()) return
 
         try {
             val safeArabic = entity.arabicPhrase.ifBlank { entity.transliteration }.ifBlank { "سُبْحَانَ اللَّهِ" }.take(500)
@@ -227,9 +275,9 @@ class CloudSyncRepository(
                 .document(entity.id)
                 .set(data, SetOptions.merge())
                 .await()
-            Log.d(TAG, "Synced custom Zikr: ${entity.id}")
+            Log.d(TAG, "Synced Zikr counter: ${entity.id}")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to sync custom Zikr: ${e.message}", e)
+            Log.e(TAG, "Failed to sync Zikr counter: ${e.message}", e)
         }
     }
 
@@ -588,9 +636,67 @@ class CloudSyncRepository(
     }
 
     /**
-     * Full restore: restores bookmarks, favorite Duas, Hadiths, Debt Ledger, and spiritual stats upon login or reinstall
+     * Clears ALL local user-owned Room tables & DataStore worship stats so one account's data
+     * (or Guest mode data) NEVER leaks into a brand-new or different Gmail/Phone account.
+     * Note: Bundled read-only tables (e.g. hadiths) and device preferences are untouched.
      */
-    suspend fun restoreUserDataFromCloud(userId: String): Result<Boolean> {
+    suspend fun clearLocalUserData() {
+        appPreferences.clearAllUserWorshipData()
+        database.monthlyWorshipDao().clearAll()
+        database.tasbihDao().clearAll()
+        database.amalDao().clearAll()
+        database.bookmarkDao().clearAll()
+        database.hadithBookmarkDao().clearAll()
+        database.debtLedgerDao().clearAll()
+    }
+
+    /**
+     * Ensures local storage belongs strictly to [targetUid].
+     * Returns true if the active owner changed (and local user tables were cleanly wiped to 0/empty).
+     */
+    suspend fun prepareLocalStorageForAccount(targetUid: String): Boolean {
+        val normalizedTarget = targetUid.ifBlank { AppPreferences.GUEST_DATA_OWNER }
+        val previousOwner = appPreferences.activeDataOwnerUid.first()
+        if (previousOwner != normalizedTarget) {
+            Log.d(TAG, "Account owner switched ($previousOwner -> $normalizedTarget): wiping local user worship data.")
+            clearLocalUserData()
+            appPreferences.setActiveDataOwnerUid(normalizedTarget)
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Atomically handles sign-in / account switching for Google (Gmail) and Phone accounts:
+     * 1. If switching from Guest or another account, wipes ALL local user data to strict 0/empty first.
+     * 2. Restores ONLY this account's cloud data from Firestore (exact values, zero cross-account merge).
+     * 3. For brand-new accounts (no Firestore doc yet), keeps all local counters strictly at 0 and
+     *    initializes a clean zero-valued profile document in Firestore.
+     */
+    suspend fun switchAccountAndSync(userSession: UserSession) = accountSwitchMutex.withLock {
+        if (userSession.uid.isBlank()) return@withLock
+        val switched = prepareLocalStorageForAccount(userSession.uid)
+        val restoreResult = restoreUserDataFromCloud(userSession.uid, replaceLocal = switched)
+        if (restoreResult.isSuccess) {
+            syncProfileAndStats(userSession)
+        }
+    }
+
+    /**
+     * Resets all local user-owned data cleanly to 0/empty upon sign-out so the next user
+     * or Guest session starts completely fresh.
+     */
+    suspend fun resetLocalDataOnSignOut() = accountSwitchMutex.withLock {
+        clearLocalUserData()
+        appPreferences.setActiveDataOwnerUid(AppPreferences.GUEST_DATA_OWNER)
+        _syncStatus.value = SyncStatus.Idle
+    }
+
+    /**
+     * Full restore: restores bookmarks, favorite Duas, Hadiths, Debt Ledger, Amals, Tasbeeh, and spiritual stats.
+     * When [replaceLocal] is true (account switch), cloud values strictly replace local values without merging old leftovers.
+     */
+    suspend fun restoreUserDataFromCloud(userId: String, replaceLocal: Boolean = false): Result<Boolean> {
         val firestore = db ?: return Result.failure(Exception("Firestore not available"))
         val currentAuthUid = try {
             com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
@@ -605,6 +711,10 @@ class CloudSyncRepository(
         _syncStatus.value = SyncStatus.Syncing
 
         return try {
+            // Ensure local storage is strictly scoped to this UID even on direct launch/manual restore
+            val ownerSwitched = prepareLocalStorageForAccount(userId)
+            val strictReplace = replaceLocal || ownerSwitched
+
             // 1. Restore Profile & Stats
             val userDoc = firestore.collection("users").document(userId).get().await()
             if (userDoc.exists()) {
@@ -654,6 +764,17 @@ class CloudSyncRepository(
                         appPreferences.setThemeMode(mode)
                     }
                 }
+            } else {
+                // Brand-new account with no Firestore record yet: enforce strict zero counters locally!
+                appPreferences.restoreSpiritualStats(
+                    quranMins = 0,
+                    duasCount = 0,
+                    tasbihCount = 0,
+                    salawatCount = 0,
+                    hadithMins = 0,
+                    hadithCount = 0,
+                    prayerStreak = 0
+                )
             }
 
             // 2. Restore Quran Bookmarks
@@ -783,20 +904,40 @@ class CloudSyncRepository(
                 restoredDebtsCount++
             }
 
-            // 6. Restore Today's Amal Records
+            // 6. Restore Daily Amal & 5-Prayer Tracker Records (last 14 days)
             val todayString = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
-            val todayAmalDoc = firestore.collection("users")
+            val amalSnapshot = firestore.collection("users")
                 .document(userId)
                 .collection("amalRecords")
-                .document(todayString)
                 .get()
                 .await()
 
-            if (todayAmalDoc.exists()) {
-                @Suppress("UNCHECKED_CAST")
-                val amalsList = todayAmalDoc.get("completedAmals") as? List<String>
-                if (amalsList != null) {
-                    appPreferences.setTodayAmals(todayString, amalsList.toSet())
+            for (amalDoc in amalSnapshot.documents) {
+                val dateKey = amalDoc.getString("date") ?: amalDoc.id
+                if (dateKey == todayString) {
+                    @Suppress("UNCHECKED_CAST")
+                    val amalsList = amalDoc.get("completedAmals") as? List<String>
+                    if (amalsList != null) {
+                        appPreferences.setTodayAmals(todayString, amalsList.toSet())
+                    }
+                }
+                val hasPrayerFields = amalDoc.contains("fajr") || amalDoc.contains("dhuhr") ||
+                    amalDoc.contains("asr") || amalDoc.contains("maghrib") ||
+                    amalDoc.contains("isha") || amalDoc.contains("tahajjud") || amalDoc.contains("surahKahf")
+                if (hasPrayerFields && dateKey.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$"))) {
+                    database.amalDao().saveAmal(
+                        com.example.data.local.AmalEntity(
+                            dateString = dateKey,
+                            fajr = amalDoc.getBoolean("fajr") ?: false,
+                            dhuhr = amalDoc.getBoolean("dhuhr") ?: false,
+                            asr = amalDoc.getBoolean("asr") ?: false,
+                            maghrib = amalDoc.getBoolean("maghrib") ?: false,
+                            isha = amalDoc.getBoolean("isha") ?: false,
+                            tahajjud = amalDoc.getBoolean("tahajjud") ?: false,
+                            surahKahf = amalDoc.getBoolean("surahKahf") ?: false,
+                            tasbeehDone = amalDoc.getBoolean("tasbeehDone") ?: false
+                        )
+                    )
                 }
             }
 
@@ -810,7 +951,7 @@ class CloudSyncRepository(
             for (doc in monthlySnapshot.documents) {
                 val ym = doc.getString("yearMonth") ?: doc.id
                 if (ym.matches(Regex("^\\d{4}-\\d{2}$"))) {
-                    val existing = database.monthlyWorshipDao().getMonth(ym)
+                    val existing = if (strictReplace) null else database.monthlyWorshipDao().getMonth(ym)
                     val remoteQuran = doc.getLong("quranMinutes")?.toInt() ?: 0
                     val remoteDua = doc.getLong("duaCount")?.toInt() ?: 0
                     val remoteTasbih = doc.getLong("tasbihCount")?.toInt() ?: 0
@@ -820,19 +961,19 @@ class CloudSyncRepository(
                     val remoteUpdatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis()
                     val merged = com.example.data.local.MonthlyWorshipEntity(
                         yearMonth = ym,
-                        quranMinutes = maxOf(existing?.quranMinutes ?: 0, remoteQuran),
-                        duaCount = maxOf(existing?.duaCount ?: 0, remoteDua),
-                        tasbihCount = maxOf(existing?.tasbihCount ?: 0, remoteTasbih),
-                        duroodCount = maxOf(existing?.duroodCount ?: 0, remoteDurood),
-                        hadithMinutes = maxOf(existing?.hadithMinutes ?: 0, remoteHadithMins),
-                        hadithReadCount = maxOf(existing?.hadithReadCount ?: 0, remoteHadithRead),
-                        updatedAt = maxOf(existing?.updatedAt ?: 0L, remoteUpdatedAt)
+                        quranMinutes = if (strictReplace) remoteQuran else maxOf(existing?.quranMinutes ?: 0, remoteQuran),
+                        duaCount = if (strictReplace) remoteDua else maxOf(existing?.duaCount ?: 0, remoteDua),
+                        tasbihCount = if (strictReplace) remoteTasbih else maxOf(existing?.tasbihCount ?: 0, remoteTasbih),
+                        duroodCount = if (strictReplace) remoteDurood else maxOf(existing?.duroodCount ?: 0, remoteDurood),
+                        hadithMinutes = if (strictReplace) remoteHadithMins else maxOf(existing?.hadithMinutes ?: 0, remoteHadithMins),
+                        hadithReadCount = if (strictReplace) remoteHadithRead else maxOf(existing?.hadithReadCount ?: 0, remoteHadithRead),
+                        updatedAt = if (strictReplace) remoteUpdatedAt else maxOf(existing?.updatedAt ?: 0L, remoteUpdatedAt)
                     )
                     database.monthlyWorshipDao().upsert(merged)
                 }
             }
 
-            // 8. Restore Custom Tasbeeh / Dhikr Counters
+            // 8. Restore ALL Tasbeeh / Dhikr Counters (built-in presets & custom Zikrs)
             val zikrsSnapshot = firestore.collection("users")
                 .document(userId)
                 .collection("customZikrs")
@@ -841,7 +982,7 @@ class CloudSyncRepository(
 
             var restoredCustomZikrsCount = 0
             for (doc in zikrsSnapshot.documents) {
-                val id = (doc.getString("id") ?: doc.id).takeIf { it.startsWith("custom_") } ?: continue
+                val id = (doc.getString("id") ?: doc.id).takeIf { it.isNotBlank() } ?: continue
                 val arabicPhrase = doc.getString("arabicPhrase")?.takeIf { it.isNotBlank() } ?: continue
                 val transliteration = doc.getString("transliteration") ?: ""
                 val bengaliMeaning = doc.getString("bengaliMeaning") ?: ""
@@ -931,11 +1072,15 @@ class CloudSyncRepository(
                 syncDebtEntryToCloud(userId, debt)
             }
 
-            // Push today's Amal record
+            // Push today's Amal record & recent 5-prayer tracker records
             val todayString = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
             val todayAmals = appPreferences.getTodayAmals(todayString).first()
             if (todayAmals.isNotEmpty()) {
                 syncAmalRecordToCloud(userId, todayString, todayAmals)
+            }
+            val recentPrayerAmals = database.amalDao().getAllRecentAmals()
+            for (prayerAmal in recentPrayerAmals) {
+                syncDailyPrayerAmalToCloud(userId, prayerAmal)
             }
 
             // Push all monthly worship archive records
@@ -944,9 +1089,9 @@ class CloudSyncRepository(
                 syncMonthlyWorshipToCloud(userId, record)
             }
 
-            // Push all custom Tasbeeh / Dhikr items
-            val customZikrs = database.tasbihDao().getAllCounters().first().filter { it.isCustom }
-            for (zikr in customZikrs) {
+            // Push all Tasbeeh / Dhikr counters (built-in presets & custom)
+            val allZikrs = database.tasbihDao().getAllCounters().first()
+            for (zikr in allZikrs) {
                 syncCustomZikrToCloud(userId, zikr)
             }
 
@@ -956,7 +1101,7 @@ class CloudSyncRepository(
                 restoredDuas = localDuas.size,
                 restoredHadiths = localHadiths.size,
                 restoredDebts = localDebts.size,
-                restoredCustomZikrs = customZikrs.size
+                restoredCustomZikrs = allZikrs.size
             )
         } catch (e: Exception) {
             Log.e(TAG, "Backup all failed: ${e.message}", e)

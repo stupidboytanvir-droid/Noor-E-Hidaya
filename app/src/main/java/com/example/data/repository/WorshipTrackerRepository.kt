@@ -30,6 +30,11 @@ enum class WorshipCategory(
 
     fun localizedTitle(lang: String): String = com.example.ui.theme.localizedText(lang, titleBengali, titleEnglish)
     fun localizedUnit(lang: String): String = com.example.ui.theme.localizedText(lang, unitBengali, unitEnglish)
+
+    companion object {
+        /** Categories shown in worship timing charts & insights (Du'a intentionally excluded). */
+        val CHART_CATEGORIES: List<WorshipCategory> = listOf(QURAN, TASBIH, DUROOD, HADITH)
+    }
 }
 
 class WorshipTrackerRepository(

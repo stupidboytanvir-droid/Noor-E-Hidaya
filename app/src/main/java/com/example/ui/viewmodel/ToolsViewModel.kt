@@ -464,6 +464,8 @@ class ToolsViewModel(application: Application) : AndroidViewModel(application) {
         }
         viewModelScope.launch(Dispatchers.IO) {
             amalDao.saveAmal(updated)
+            com.example.data.cloud.CloudSyncRepository(getApplication(), prefs, db)
+                .autoSyncDailyPrayerAmal(updated)
         }
     }
 
@@ -505,7 +507,7 @@ class ToolsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun speakArabic(text: String, speed: Float = 0.85f): Boolean {
         val uiLang = com.example.data.util.LocaleHelper.getUiLanguageSync(getApplication())
-        audioPlayer.playArabicTextSpeech(
+        return audioPlayer.playArabicTextSpeech(
             text = text,
             title = com.example.ui.theme.localizedText(uiLang, "আরবি উচ্চারণ", "Arabic Pronunciation"),
             subtitle = "Noor-e-Hidayah",
@@ -513,7 +515,44 @@ class ToolsViewModel(application: Application) : AndroidViewModel(application) {
             ttsManager = ttsManager,
             preferOnline = true
         )
-        return true
+    }
+
+    fun playTilawatSample(
+        urls: List<String>,
+        title: String,
+        subtitle: String,
+        fallbackArabicText: String
+    ) {
+        val validUrls = urls.filter { it.isNotBlank() }
+        if (validUrls.isEmpty()) {
+            speakArabic(fallbackArabicText)
+            return
+        }
+        if (validUrls.size == 1) {
+            audioPlayer.playAudio(
+                url = validUrls.first(),
+                title = title,
+                subtitle = subtitle,
+                mediaId = "tilawat_${title.hashCode()}",
+                fallbackArabicText = fallbackArabicText,
+                ttsManager = ttsManager
+            )
+        } else {
+            val items = validUrls.mapIndexed { idx, url ->
+                com.example.data.audio.AudioTrackItem(
+                    url = url,
+                    title = title,
+                    subtitle = "$subtitle (${idx + 1}/${validUrls.size})",
+                    mediaId = "tilawat_${title.hashCode()}_$idx",
+                    fallbackArabicText = fallbackArabicText
+                )
+            }
+            audioPlayer.playPlaylist(
+                items = items,
+                startIndex = 0,
+                ttsManager = ttsManager
+            )
+        }
     }
 
     fun stopTts() {

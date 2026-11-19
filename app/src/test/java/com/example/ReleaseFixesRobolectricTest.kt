@@ -6,6 +6,7 @@ import com.example.data.ai.GeminiIslamicAssistant
 import com.example.data.audio.ArabicTtsManager
 import com.example.data.audio.AudioPlayerManager
 import com.example.data.update.InAppUpdateManager
+import kotlinx.coroutines.flow.first
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -250,4 +251,152 @@ class ReleaseFixesRobolectricTest {
         assertTrue(waqtCopyBn.content.contains("শুরু"))
         assertFalse(waqtCopyBn.content.contains("ওযু"))
     }
+
+    @Test
+    fun `worship chart categories exclude dua while keeping quran tasbih durood and hadith`() {
+        val categories = com.example.data.repository.WorshipCategory.CHART_CATEGORIES
+        assertEquals(4, categories.size)
+        assertFalse(categories.contains(com.example.data.repository.WorshipCategory.DUA))
+        assertTrue(categories.contains(com.example.data.repository.WorshipCategory.QURAN))
+        assertTrue(categories.contains(com.example.data.repository.WorshipCategory.TASBIH))
+        assertTrue(categories.contains(com.example.data.repository.WorshipCategory.DUROOD))
+        assertTrue(categories.contains(com.example.data.repository.WorshipCategory.HADITH))
+    }
+
+    @Test
+    fun `tilawat studio presets and dua catalog expose verified male reciter https audio urls`() {
+        val samples = com.example.ui.screens.HARAKAT_SAMPLES
+        assertEquals(8, samples.size)
+        samples.forEach { sample ->
+            val urls = sample.allAudioUrls
+            assertTrue("Sample ${sample.titleEnglish} must have at least one male MP3 URL", urls.isNotEmpty())
+            urls.forEach { url ->
+                assertTrue("Sample URL must be HTTPS: $url", url.startsWith("https://"))
+                assertTrue(
+                    "Sample URL must be from verified male reciter domain: $url",
+                    url.contains("everyayah.com/data/Alafasy_128kbps/") ||
+                        url.contains("hisnmuslim.com/audio/ar/")
+                )
+                assertFalse("Female translate TTS must never be used", url.contains("translate.google"))
+            }
+        }
+
+        // Surah Al-Ikhlas preset must include all 4 ayahs
+        val ikhlas = samples.first { it.titleEnglish.contains("Ikhlas") }
+        assertEquals(4, ikhlas.allAudioUrls.size)
+
+        // Verified male Dua audio catalog
+        assertTrue(
+            "Expected at least 78 verified male Dua audio URLs",
+            com.example.data.model.DuaRepository.VERIFIED_MALE_DUA_AUDIO_URLS.size >= 78
+        )
+        val duasWithAudio = com.example.data.model.DuaRepository.DUAS.filter { !it.audioUrl.isNullOrBlank() }
+        assertTrue("Expected at least 78 Duas enriched with male audio URLs", duasWithAudio.size >= 78)
+        duasWithAudio.forEach { dua ->
+            val url = dua.audioUrl!!
+            assertTrue("Dua ${dua.id} URL must be HTTPS: $url", url.startsWith("https://"))
+            assertTrue(
+                "Dua ${dua.id} URL must use verified male reciter host: $url",
+                url.contains("hisnmuslim.com/audio/ar/") || url.contains("everyayah.com/data/Alafasy_128kbps/")
+            )
+        }
+    }
+
+    @Test
+    fun `account switching and sign out strictly isolate and wipe local user worship data`() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val prefs = com.example.data.preference.AppPreferences(context)
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(
+            context,
+            com.example.data.local.AppDatabase::class.java
+        ).allowMainThreadQueries().build()
+
+        try {
+            val syncRepo = com.example.data.cloud.CloudSyncRepository(context, prefs, db)
+
+            // 1. Simulate Guest activity before signing into a brand-new Gmail/Phone account
+            prefs.setActiveDataOwnerUid(com.example.data.preference.AppPreferences.GUEST_DATA_OWNER)
+            prefs.incrementQuranReadMinutes(25)
+            prefs.addTasbihCount(99)
+            prefs.incrementHadithReadMinutes(12)
+            prefs.toggleFavoriteDua("morning_1")
+            db.monthlyWorshipDao().upsert(
+                com.example.data.local.MonthlyWorshipEntity(
+                    yearMonth = "2026-11",
+                    quranMinutes = 25,
+                    tasbihCount = 99,
+                    duroodCount = 50,
+                    hadithMinutes = 12
+                )
+            )
+            db.tasbihDao().insertOrUpdate(
+                com.example.data.local.TasbihEntity(
+                    id = "subhanallah",
+                    arabicPhrase = "سُبْحَانَ اللَّهِ",
+                    transliteration = "SubhanAllah",
+                    bengaliMeaning = "সুবহানাল্লাহ",
+                    targetCount = 33,
+                    currentCount = 21,
+                    completedRounds = 3
+                )
+            )
+            db.amalDao().saveAmal(
+                com.example.data.local.AmalEntity(
+                    dateString = "2026-11-19",
+                    fajr = true,
+                    dhuhr = true
+                )
+            )
+            db.bookmarkDao().addBookmark(
+                com.example.data.local.BookmarkEntity(
+                    key = "2_255",
+                    surahNumber = 2,
+                    surahNameArabic = "البقرة",
+                    surahNameEnglish = "Al-Baqarah",
+                    ayahNumber = 255,
+                    ayahTextArabic = "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ"
+                )
+            )
+
+            // 2. Switch from GUEST -> Brand-New Account A: MUST wipe all local guest data to 0/empty
+            val switchedToA = syncRepo.prepareLocalStorageForAccount("uid_new_account_A")
+            assertTrue("Switching GUEST -> uid_A must report account switch", switchedToA)
+            assertEquals(0, prefs.quranReadMinutesToday.first())
+            assertEquals(0, prefs.totalTasbihCount.first())
+            assertEquals(0, prefs.hadithReadMinutes.first())
+            assertTrue(prefs.favoriteDuaIds.first().isEmpty())
+            assertTrue(db.monthlyWorshipDao().getAllMonths().isEmpty())
+            assertTrue(db.tasbihDao().getAllCounters().first().isEmpty())
+            assertTrue(db.amalDao().getAllRecentAmals().isEmpty())
+            assertTrue(db.bookmarkDao().getAllBookmarks().first().isEmpty())
+            assertEquals("uid_new_account_A", prefs.activeDataOwnerUid.first())
+
+            // 3. Account A logs worship progress; relaunching SAME account A must preserve its data
+            prefs.incrementQuranReadMinutes(15)
+            prefs.addTasbihCount(33)
+            val relaunchedSameA = syncRepo.prepareLocalStorageForAccount("uid_new_account_A")
+            assertFalse("Same UID relaunch must NOT wipe Account A's data", relaunchedSameA)
+            assertEquals(15, prefs.quranReadMinutesToday.first())
+            assertEquals(33, prefs.totalTasbihCount.first())
+
+            // 4. Switch from Account A -> Brand-New Account B: MUST wipe Account A's data cleanly
+            val switchedToB = syncRepo.prepareLocalStorageForAccount("uid_new_account_B")
+            assertTrue("Switching uid_A -> uid_B must wipe previous user's data", switchedToB)
+            assertEquals(0, prefs.quranReadMinutesToday.first())
+            assertEquals(0, prefs.totalTasbihCount.first())
+            assertEquals("uid_new_account_B", prefs.activeDataOwnerUid.first())
+
+            // 5. Account B logs data, then Signs Out: MUST wipe local data and revert owner to GUEST
+            prefs.incrementQuranReadMinutes(40)
+            syncRepo.resetLocalDataOnSignOut()
+            assertEquals(0, prefs.quranReadMinutesToday.first())
+            assertEquals(
+                com.example.data.preference.AppPreferences.GUEST_DATA_OWNER,
+                prefs.activeDataOwnerUid.first()
+            )
+        } finally {
+            db.close()
+        }
+    }
 }
+

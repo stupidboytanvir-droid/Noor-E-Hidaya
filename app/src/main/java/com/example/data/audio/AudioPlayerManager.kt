@@ -4,11 +4,17 @@ import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import androidx.annotation.OptIn
 import androidx.core.content.ContextCompat
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.DefaultLoadControl
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.example.data.util.LocaleHelper
@@ -67,8 +73,13 @@ class AudioPlayerManager private constructor(context: Context) {
 
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var controller: MediaController? = null
-    private var pendingCommand: ((MediaController) -> Unit)? = null
+    private var directPlayer: ExoPlayer? = null
+    private var pendingCommand: ((Player) -> Unit)? = null
+    private var controllerFallbackJob: Job? = null
     private var progressJob: Job? = null
+
+    private val activePlayer: Player?
+        get() = controller ?: directPlayer
 
     private var currentTracks: List<AudioTrackItem> = emptyList()
     private var activeFallbackQueue: ArrayDeque<String> = ArrayDeque()
@@ -118,36 +129,104 @@ class AudioPlayerManager private constructor(context: Context) {
             future.addListener({
                 try {
                     val mc = future.get()
+                    controllerFallbackJob?.cancel()
+                    controllerFallbackJob = null
+                    // If directPlayer was spun up while MediaController was connecting, keep whichever is playing smoothly
+                    if (directPlayer?.isPlaying == true) {
+                        controller = mc
+                        mc.addListener(playerListener)
+                        mc.setPlaybackSpeed(_playbackState.value.speed)
+                        return@addListener
+                    }
+                    releaseDirectPlayer()
                     mc.addListener(playerListener)
                     controller = mc
                     mc.setPlaybackSpeed(_playbackState.value.speed)
                     val cmd = pendingCommand
                     pendingCommand = null
                     cmd?.invoke(mc)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     controllerFuture = null
-                    _playbackState.value = _playbackState.value.copy(
-                        isPlaying = false,
-                        isBuffering = false,
-                        error = localizedError(
-                            "অডিও সার্ভিস চালু করা যায়নি",
-                            "Could not connect audio service"
-                        )
-                    )
+                    activateDirectExoPlayerAndRunPending()
                 }
             }, ContextCompat.getMainExecutor(appContext))
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             controllerFuture = null
+            activateDirectExoPlayerAndRunPending()
         }
     }
 
-    private fun withController(action: (MediaController) -> Unit) {
-        val mc = controller
-        if (mc != null) {
-            action(mc)
+    @OptIn(UnstableApi::class)
+    private fun getOrCreateDirectExoPlayer(): ExoPlayer? {
+        if (isRobolectricRuntime()) return null
+        directPlayer?.let { return it }
+        return try {
+            val loadControl = DefaultLoadControl.Builder()
+                .setBufferDurationsMs(1_500, 25_000, 200, 500)
+                .build()
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(C.USAGE_MEDIA)
+                .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
+                .build()
+            ExoPlayer.Builder(appContext)
+                .setMediaSourceFactory(MediaCacheProvider.buildMediaSourceFactory(appContext))
+                .setLoadControl(loadControl)
+                .setAudioAttributes(audioAttributes, true)
+                .setHandleAudioBecomingNoisy(true)
+                .build()
+                .also { player ->
+                    player.addListener(playerListener)
+                    player.setPlaybackSpeed(_playbackState.value.speed)
+                    directPlayer = player
+                }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun releaseDirectPlayer() {
+        try {
+            directPlayer?.removeListener(playerListener)
+            directPlayer?.stop()
+            directPlayer?.release()
+        } catch (_: Exception) {}
+        directPlayer = null
+    }
+
+    private fun activateDirectExoPlayerAndRunPending() {
+        val player = getOrCreateDirectExoPlayer()
+        val cmd = pendingCommand
+        pendingCommand = null
+        if (player != null) {
+            cmd?.invoke(player)
+        } else {
+            _playbackState.value = _playbackState.value.copy(
+                isPlaying = false,
+                isBuffering = false,
+                error = localizedError(
+                    "অডিও প্লেয়ার চালু করা যায়নি",
+                    "Could not initialize audio player"
+                )
+            )
+        }
+    }
+
+    private fun withController(action: (Player) -> Unit) {
+        val player = activePlayer
+        if (player != null) {
+            action(player)
         } else {
             pendingCommand = action
             ensureControllerConnected()
+            if (!isRobolectricRuntime()) {
+                controllerFallbackJob?.cancel()
+                controllerFallbackJob = scope.launch {
+                    delay(1_800L)
+                    if (controller == null && pendingCommand != null) {
+                        activateDirectExoPlayerAndRunPending()
+                    }
+                }
+            }
         }
     }
 
@@ -174,7 +253,7 @@ class AudioPlayerManager private constructor(context: Context) {
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            val mc = controller ?: return
+            val mc = activePlayer ?: return
             val index = mc.currentMediaItemIndex
             val track = currentTracks.getOrNull(index)
             if (track != null) {
@@ -199,7 +278,7 @@ class AudioPlayerManager private constructor(context: Context) {
             val nextFallback = if (activeFallbackQueue.isNotEmpty()) activeFallbackQueue.removeFirst() else null
             if (!nextFallback.isNullOrBlank()) {
                 val state = _playbackState.value
-                val mc = controller
+                val mc = activePlayer
                 if (mc != null) {
                     val idx = mc.currentMediaItemIndex.coerceAtLeast(0)
                     val updatedTrack = (currentTracks.getOrNull(idx) ?: AudioTrackItem(
@@ -259,7 +338,7 @@ class AudioPlayerManager private constructor(context: Context) {
     }
 
     private fun syncStateFromController() {
-        val mc = controller ?: return
+        val mc = activePlayer ?: return
         val idx = mc.currentMediaItemIndex.coerceAtLeast(0)
         val track = currentTracks.getOrNull(idx)
         val pState = mc.playbackState
@@ -326,7 +405,7 @@ class AudioPlayerManager private constructor(context: Context) {
         }
 
         // Toggle if already loaded on this exact URL
-        if (_playbackState.value.currentUrl == url && currentTracks.size == 1 && controller != null) {
+        if (_playbackState.value.currentUrl == url && currentTracks.size == 1 && activePlayer != null) {
             togglePlayPause()
             return
         }
@@ -390,6 +469,13 @@ class AudioPlayerManager private constructor(context: Context) {
         onPlaylistCompleted: (() -> Unit)? = null
     ) {
         if (items.isEmpty()) return
+        // Stop any active male TTS before starting MP3 playlist
+        if (isPlayingViaTts) {
+            isPlayingViaTts = false
+            try {
+                (activeTtsManager ?: defaultTtsManager).stop()
+            } catch (_: Exception) {}
+        }
         val safeIndex = startIndex.coerceIn(0, items.lastIndex)
 
         this.currentTracks = items
@@ -397,7 +483,7 @@ class AudioPlayerManager private constructor(context: Context) {
         this.onPlaylistCompleted = onPlaylistCompleted
         this.onPlaybackCompleted = null
         this.activeFallbackArabicText = items[safeIndex].fallbackArabicText
-        this.activeTtsManager = ttsManager
+        this.activeTtsManager = ttsManager ?: defaultTtsManager
         this.activeFallbackQueue = ArrayDeque(items[safeIndex].fallbackUrls)
 
         val initialTrack = items[safeIndex]
@@ -440,7 +526,7 @@ class AudioPlayerManager private constructor(context: Context) {
         ttsManager: ArabicTtsManager? = null,
         @Suppress("UNUSED_PARAMETER") preferOnline: Boolean = false,
         onCompleted: (() -> Unit)? = null
-    ) {
+    ): Boolean {
         val cleaned = extractSpeakableArabicOrClean(text)
         if (cleaned.isBlank()) {
             _playbackState.value = _playbackState.value.copy(
@@ -449,13 +535,13 @@ class AudioPlayerManager private constructor(context: Context) {
                     "Please enter Arabic text to pronounce"
                 )
             )
-            return
+            return false
         }
 
         // Stop any running ExoPlayer audio first
         try {
-            controller?.stop()
-            controller?.clearMediaItems()
+            activePlayer?.stop()
+            activePlayer?.clearMediaItems()
         } catch (_: Exception) {}
         stopProgressTracker()
 
@@ -472,7 +558,8 @@ class AudioPlayerManager private constructor(context: Context) {
             speed = speed.coerceIn(0.6f, 1.4f)
         ) {
             isPlayingViaTts = false
-            _playbackState.value = PlaybackState(speed = _playbackState.value.speed)
+            val err = resolvedTts.state.value.errorMessage
+            _playbackState.value = PlaybackState(speed = _playbackState.value.speed, error = err)
             onCompleted?.invoke()
         }
 
@@ -492,6 +579,7 @@ class AudioPlayerManager private constructor(context: Context) {
                 speed = speed,
                 error = null
             )
+            return true
         } else {
             isPlayingViaTts = false
             val ttsError = resolvedTts.state.value.errorMessage
@@ -499,11 +587,16 @@ class AudioPlayerManager private constructor(context: Context) {
                 isPlaying = false,
                 isBuffering = false,
                 error = ttsError ?: localizedError(
-                    "ডিভাইসে পুরুষ আরবি ভয়েস প্যাক প্রস্তুত নয়",
+                    "ডিভাইসে পুরুষ আরবি ভয়েস প্যাক প্রস্তুত নয়",
                     "Male Arabic voice pack is not ready on this device"
                 )
             )
+            return false
         }
+    }
+
+    fun clearError() {
+        _playbackState.value = _playbackState.value.copy(error = null)
     }
 
     fun togglePlayPause() {
@@ -511,7 +604,7 @@ class AudioPlayerManager private constructor(context: Context) {
             stop()
             return
         }
-        val mc = controller
+        val mc = activePlayer
         if (mc == null) {
             val url = _playbackState.value.currentUrl
             if (url.isNotBlank()) {
@@ -540,12 +633,12 @@ class AudioPlayerManager private constructor(context: Context) {
     }
 
     fun pause() {
-        controller?.pause()
+        activePlayer?.pause()
         syncStateFromController()
     }
 
     fun resume() {
-        controller?.let { mc ->
+        activePlayer?.let { mc ->
             if (mc.playbackState == Player.STATE_ENDED) mc.seekTo(0L)
             mc.prepare()
             mc.play()
@@ -554,14 +647,14 @@ class AudioPlayerManager private constructor(context: Context) {
     }
 
     fun seekTo(positionMs: Int) {
-        controller?.let { mc ->
+        activePlayer?.let { mc ->
             mc.seekTo(positionMs.coerceAtLeast(0).toLong())
             _playbackState.value = _playbackState.value.copy(currentPositionMs = positionMs.coerceAtLeast(0))
         }
     }
 
     fun seekToIndex(index: Int) {
-        val mc = controller ?: return
+        val mc = activePlayer ?: return
         if (index in 0 until mc.mediaItemCount) {
             mc.seekTo(index, 0L)
             mc.prepare()
@@ -570,7 +663,7 @@ class AudioPlayerManager private constructor(context: Context) {
     }
 
     fun skipNext() {
-        val mc = controller ?: return
+        val mc = activePlayer ?: return
         if (mc.hasNextMediaItem()) {
             mc.seekToNextMediaItem()
             mc.play()
@@ -578,7 +671,7 @@ class AudioPlayerManager private constructor(context: Context) {
     }
 
     fun skipPrevious() {
-        val mc = controller ?: return
+        val mc = activePlayer ?: return
         if (mc.hasPreviousMediaItem()) {
             mc.seekToPreviousMediaItem()
             mc.play()
@@ -589,17 +682,19 @@ class AudioPlayerManager private constructor(context: Context) {
 
     fun setRepeatOne(repeatOne: Boolean) {
         _playbackState.value = _playbackState.value.copy(isRepeatOne = repeatOne)
-        controller?.repeatMode = if (repeatOne) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+        activePlayer?.repeatMode = if (repeatOne) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
     }
 
     fun setSpeed(speed: Float) {
         val clamped = speed.coerceIn(0.5f, 1.75f)
         _playbackState.value = _playbackState.value.copy(speed = clamped)
-        controller?.setPlaybackSpeed(clamped)
+        activePlayer?.setPlaybackSpeed(clamped)
     }
 
     fun stop() {
         stopProgressTracker()
+        controllerFallbackJob?.cancel()
+        controllerFallbackJob = null
         if (isPlayingViaTts) {
             isPlayingViaTts = false
             try {
@@ -616,6 +711,10 @@ class AudioPlayerManager private constructor(context: Context) {
             controller?.stop()
             controller?.clearMediaItems()
         } catch (_: Exception) {}
+        try {
+            directPlayer?.stop()
+            directPlayer?.clearMediaItems()
+        } catch (_: Exception) {}
         _playbackState.value = PlaybackState(speed = _playbackState.value.speed)
     }
 
@@ -631,7 +730,7 @@ class AudioPlayerManager private constructor(context: Context) {
         stopProgressTracker()
         progressJob = scope.launch {
             while (isActive) {
-                val mc = controller
+                val mc = activePlayer
                 if (mc != null && mc.isPlaying) {
                     _playbackState.value = _playbackState.value.copy(
                         currentPositionMs = mc.currentPosition.coerceAtLeast(0L).toInt(),

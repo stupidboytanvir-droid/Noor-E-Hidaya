@@ -65,6 +65,8 @@ data class ArabicTtsState(
 class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListener {
 
     private var tts: TextToSpeech? = null
+    private var triedGoogleEngine: Boolean = false
+    private var isInitializing: Boolean = false
     private var pendingSpeakText: String? = null
     private var pendingSpeakSpeed: Float = 0.80f
     private var onSpeakCompleted: (() -> Unit)? = null
@@ -74,25 +76,69 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
     val state: StateFlow<ArabicTtsState> = _state.asStateFlow()
 
     init {
+        initEngine(preferGoogle = true)
+    }
+
+    private fun initEngine(preferGoogle: Boolean) {
+        if (isInitializing) return
+        isInitializing = true
+        triedGoogleEngine = preferGoogle
         try {
-            tts = TextToSpeech(context.applicationContext, this)
+            tts?.stop()
+            tts?.shutdown()
+        } catch (_: Exception) {}
+        tts = null
+
+        try {
+            tts = if (preferGoogle) {
+                TextToSpeech(context.applicationContext, this, GOOGLE_TTS_PACKAGE)
+            } else {
+                TextToSpeech(context.applicationContext, this)
+            }
         } catch (e: Exception) {
-            _state.value = _state.value.copy(
-                isAvailable = false,
-                errorMessage = "টিটিএস ইঞ্জিন শুরু করতে ব্যর্থ হয়েছে: ${e.localizedMessage}"
-            )
+            isInitializing = false
+            if (preferGoogle) {
+                initEngine(preferGoogle = false)
+            } else {
+                failPendingSpeech("টিটিএস ইঞ্জিন শুরু করতে ব্যর্থ হয়েছে: ${e.localizedMessage}")
+            }
         }
     }
 
+    fun retryInitIfNeeded() {
+        if (!_state.value.isInitialized && !isInitializing) {
+            _state.value = _state.value.copy(
+                isAvailable = true,
+                requiresLanguageData = false,
+                errorMessage = null
+            )
+            initEngine(preferGoogle = true)
+        }
+    }
+
+    private fun failPendingSpeech(message: String, requiresData: Boolean = false) {
+        pendingSpeakText = null
+        val cb = onSpeakCompleted
+        onSpeakCompleted = null
+        _state.value = _state.value.copy(
+            isInitialized = false,
+            isSpeaking = false,
+            isAvailable = !requiresData,
+            requiresLanguageData = requiresData,
+            errorMessage = message
+        )
+        cb?.invoke()
+    }
+
     override fun onInit(status: Int) {
+        isInitializing = false
         if (status == TextToSpeech.SUCCESS) {
             setupHighQualityMaleVoice()
+        } else if (triedGoogleEngine) {
+            // Fallback seamlessly to the device's default TTS engine
+            initEngine(preferGoogle = false)
         } else {
-            _state.value = _state.value.copy(
-                isInitialized = false,
-                isAvailable = false,
-                errorMessage = "টিটিএস ইঞ্জিন প্রস্তুত করা সম্ভব হয়নি (Code: $status)"
-            )
+            failPendingSpeech("টিটিএস ইঞ্জিন প্রস্তুত করা সম্ভব হয়নি (Code: $status)")
         }
     }
 
@@ -108,30 +154,7 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
             engine.setAudioAttributes(audioAttributes)
         } catch (_: Exception) {}
 
-        // 2. Select Arabic locale with Saudi Arabia preference
-        val arabicSaLocale = Locale.forLanguageTag("ar-SA")
-        var langResult = engine.setLanguage(arabicSaLocale)
-        if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
-            langResult = engine.setLanguage(Locale.forLanguageTag("ar"))
-        }
-
-        if (langResult == TextToSpeech.LANG_MISSING_DATA) {
-            _state.value = _state.value.copy(
-                isInitialized = false,
-                requiresLanguageData = true,
-                errorMessage = "ডিভাইসে আরবি ভাষা প্যাক ডাউনলোড করা নেই"
-            )
-            return
-        } else if (langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
-            _state.value = _state.value.copy(
-                isInitialized = false,
-                requiresLanguageData = true,
-                errorMessage = "এই ডিভাইসে আরবি টিটিএস সরাসরি সমর্থিত নয়"
-            )
-            return
-        }
-
-        // 3. STRICT 100% MALE NEURAL/HIGH-QUALITY VOICE SELECTION
+        // 2. Inspect available Arabic voices FIRST (captures online Google network male voices even without offline pack!)
         var bestMaleVoice: Voice? = null
         var isNeural = false
         var maleCount = 0
@@ -139,7 +162,11 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
         try {
             val voices = engine.voices
             if (!voices.isNullOrEmpty()) {
-                val arabicVoices = voices.filter { it.locale.language == "ar" }
+                val arabicVoices = voices.filter { voice ->
+                    voice.locale.language.equals("ar", ignoreCase = true) ||
+                        voice.name.lowercase().startsWith("ar-") ||
+                        voice.name.lowercase().startsWith("ar_")
+                }
 
                 // Filter out ALL female voice signatures (including Google TTS -arc-/-ard- female IDs and voice features)
                 val nonFemaleVoices = arabicVoices.filter { voice ->
@@ -166,10 +193,41 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
             // In case voices API is restricted, rely on deep masculine pitch tuning
         }
 
+        // 3. Select Arabic locale with Saudi Arabia preference (and apply discovered male voice if available)
+        val arabicSaLocale = Locale.forLanguageTag("ar-SA")
+        var langResult = engine.setLanguage(arabicSaLocale)
+        if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
+            langResult = engine.setLanguage(Locale.forLanguageTag("ar"))
+        }
+
+        var voiceApplied = false
         if (bestMaleVoice != null) {
             try {
-                engine.voice = bestMaleVoice
+                val voiceResult = engine.setVoice(bestMaleVoice)
+                voiceApplied = (voiceResult == TextToSpeech.SUCCESS)
+                if (!voiceApplied) {
+                    engine.voice = bestMaleVoice
+                    voiceApplied = true
+                }
             } catch (_: Exception) {}
+        }
+
+        val localeReady = langResult != TextToSpeech.LANG_MISSING_DATA &&
+            langResult != TextToSpeech.LANG_NOT_SUPPORTED
+
+        if (!localeReady && !voiceApplied) {
+            if (triedGoogleEngine) {
+                // Retry with system default TTS engine in case it has Arabic installed
+                initEngine(preferGoogle = false)
+                return
+            }
+            val msg = if (langResult == TextToSpeech.LANG_MISSING_DATA) {
+                "ডিভাইসে আরবি ভাষা প্যাক ডাউনলোড করা নেই — নিচের বাটনে ট্যাপ করে আরবি ভয়েস প্যাক ইনস্টল করুন"
+            } else {
+                "এই ডিভাইসে আরবি টিটিএস ভয়েস প্যাক পাওয়া যায়নি"
+            }
+            failPendingSpeech(msg, requiresData = true)
+            return
         }
 
         // 4. Apply Strictly Masculine Acoustic Tuning
@@ -250,6 +308,8 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
     }
 
     companion object {
+        private const val GOOGLE_TTS_PACKAGE = "com.google.android.tts"
+
         internal fun isKnownFemaleVoiceName(voiceName: String): Boolean {
             val lower = voiceName.lowercase()
             val femaleMarkers = listOf(
@@ -325,11 +385,19 @@ class ArabicTtsManager(private val context: Context) : TextToSpeech.OnInitListen
 
         val engine = tts
         if (engine == null || !_state.value.isInitialized) {
-            if (_state.value.isAvailable && engine != null) {
+            if (isInitializing && engine != null) {
                 // Queue utterance until onInit completes
                 pendingSpeakText = trimmed
                 pendingSpeakSpeed = speed
                 _state.value = _state.value.copy(isSpeaking = true, errorMessage = null)
+                return true
+            }
+            // Retry initialization once in case user just installed Arabic speech data
+            if (_state.value.requiresLanguageData || engine == null) {
+                pendingSpeakText = trimmed
+                pendingSpeakSpeed = speed
+                _state.value = _state.value.copy(isSpeaking = true, errorMessage = null)
+                initEngine(preferGoogle = true)
                 return true
             }
             _state.value = _state.value.copy(errorMessage = "টিটিএস ইঞ্জিন এখনও প্রস্তুত নয়")

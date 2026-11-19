@@ -23,6 +23,10 @@
     <queries>
         <package android:name="com.android.vending" />
         <package android:name="com.google.android.gms" />
+        <package android:name="com.google.android.tts" />
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.BROWSABLE" />

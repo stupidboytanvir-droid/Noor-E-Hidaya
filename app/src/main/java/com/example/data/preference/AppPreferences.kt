@@ -90,6 +90,7 @@ class AppPreferences(private val context: Context) {
 
         val KEY_USER_LOGGED_IN = booleanPreferencesKey("user_logged_in")
         val KEY_USER_ID = stringPreferencesKey("user_id")
+        val KEY_ACTIVE_DATA_OWNER_UID = stringPreferencesKey("active_data_owner_uid")
         val KEY_USER_NAME = stringPreferencesKey("user_name")
         val KEY_USER_EMAIL = stringPreferencesKey("user_email")
         val KEY_USER_PHONE = stringPreferencesKey("user_phone")
@@ -104,6 +105,7 @@ class AppPreferences(private val context: Context) {
         val KEY_LAST_READ_HADITH_PAGE = intPreferencesKey("last_read_hadith_page")
         val KEY_HADITH_FONT_SCALE = floatPreferencesKey("hadith_font_scale")
 
+        const val GUEST_DATA_OWNER = "GUEST"
         const val DEFAULT_USER_NAME = "সম্মানিত মেহমান (Guest)"
         const val DEFAULT_USER_EMAIL = ""
         const val DEFAULT_USER_PHONE = ""
@@ -886,6 +888,43 @@ class AppPreferences(private val context: Context) {
         }
     }
 
+    val activeDataOwnerUid: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[KEY_ACTIVE_DATA_OWNER_UID]?.takeIf { it.isNotBlank() } ?: GUEST_DATA_OWNER
+    }
+
+    suspend fun setActiveDataOwnerUid(uid: String) {
+        context.dataStore.edit {
+            it[KEY_ACTIVE_DATA_OWNER_UID] = uid.ifBlank { GUEST_DATA_OWNER }
+        }
+    }
+
+    /**
+     * Strictly zeroes out ALL user-owned worship counters, streaks, favorites, and daily Amal checkboxes.
+     * Preserves device-level preferences (language, location, Mosque Mode, notification settings, onboarding).
+     */
+    suspend fun clearAllUserWorshipData() {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_QURAN_READ_MINUTES_TODAY] = 0
+            prefs[KEY_DUAS_READ_COUNT] = 0
+            prefs[KEY_TOTAL_TASBIH_COUNT] = 0
+            prefs[KEY_SALAWAT_JUMAT_COUNT] = 0
+            prefs[KEY_HADITH_READ_MINUTES] = 0
+            prefs[KEY_HADITH_READ_COUNT] = 0
+            prefs[KEY_PRAYER_STREAK] = 0
+            prefs[KEY_ACTIVE_YEAR_MONTH] = ""
+            prefs[KEY_FAVORITE_DUAS] = emptySet()
+            prefs[KEY_CUSTOM_DUA_COLLECTIONS] = emptySet()
+            prefs.remove(KEY_LAST_READ_HADITH_BOOK)
+            prefs.remove(KEY_LAST_READ_HADITH_CHAPTER)
+            prefs.remove(KEY_LAST_READ_HADITH_ID)
+            prefs.remove(KEY_LAST_READ_HADITH_NUM)
+            prefs.remove(KEY_LAST_READ_HADITH_PAGE)
+            // Remove all per-day Amal checklist entries (amal_checked_YYYY-MM-DD)
+            val amalKeys = prefs.asMap().keys.filter { it.name.startsWith("amal_checked_") }
+            amalKeys.forEach { key -> prefs.remove(key) }
+        }
+    }
+
     suspend fun saveUserSession(name: String, email: String, phone: String, provider: String, photoUrl: String? = null, uid: String = "") {
         context.dataStore.edit {
             it[KEY_USER_LOGGED_IN] = true
@@ -896,9 +935,7 @@ class AppPreferences(private val context: Context) {
             it[KEY_USER_EMAIL] = email
             it[KEY_USER_PHONE] = phone
             it[KEY_AUTH_PROVIDER] = provider
-            if (photoUrl != null) {
-                it[KEY_USER_PHOTO_URL] = photoUrl
-            }
+            it[KEY_USER_PHOTO_URL] = photoUrl ?: ""
         }
     }
 
