@@ -479,8 +479,8 @@ fun MoreScreen(
 
                     SettingsToggleRow(
                         icon = Icons.Default.NotificationsActive,
-                        title = uiText("নামাজের ওয়াক্তে আযান অ্যালার্ট", "Prayer Time Azan Alerts"),
-                        subtitle = uiText("প্রতি ওয়াক্তের নির্ধারিত সময়ে স্মরণিকা", "Reminder notification at each prayer start time"),
+                        title = uiText("ওয়াক্ত শুরুর অ্যালার্ট", "Waqt Start Alerts"),
+                        subtitle = uiText("প্রতি ওয়াক্ত পরিবর্তনের সময় নোটিফিকেশন (যেমন: যোহর শেষ, আসর শুরু)", "Notifies when each Waqt ends and the next Waqt begins"),
                         checked = uiState.prayerAlertsEnabled,
                         onCheckedChange = { checked ->
                             if (checked &&
@@ -498,10 +498,10 @@ fun MoreScreen(
                     SettingsToggleRow(
                         icon = Icons.Default.Schedule,
                         title = uiText(
-                            "নামাজের ${uiState.prePrayerAlertMinutes} মিনিট পূর্বে প্রি-এলার্ট",
-                            "Pre-Prayer Alert (${uiState.prePrayerAlertMinutes} mins before)"
+                            "জামাতের ${uiState.prePrayerAlertMinutes} মিনিট পূর্বে প্রস্তুতি এলার্ট",
+                            "Pre-Jama'at Prep Alert (${uiState.prePrayerAlertMinutes} mins before)"
                         ),
-                        subtitle = uiText("নামাজ শুরুর পূর্বেই প্রস্তুতি ও ওযুর সতর্কতা নোটিফিকেশন", "Wudu & preparation reminder before prayer begins"),
+                        subtitle = uiText("সেট করা জামাতের আগে ওযু ও পরিষ্কার-পরিচ্ছন্ন হওয়ার রিমাইন্ডার", "Wudu & preparation reminder before your set Jama'at time"),
                         checked = uiState.prePrayerAlertEnabled,
                         onCheckedChange = { checked ->
                             if (checked &&

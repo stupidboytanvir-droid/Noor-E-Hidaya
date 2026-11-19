@@ -2593,10 +2593,48 @@ fun MosqueModeView(
                         }
                     }
                 }
+                val canExactAlarms = MosqueModeScheduler.canScheduleExactAlarms(context)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S && !canExactAlarms) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF1E1408))
+                            .border(0.5.dp, ChampagneGold.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = uiText(
+                                "জামাত শেষে ঠিক সময়ে ফোন নরমাল মোডে ফেরত আনতে 'Alarms & Reminders' অনুমতি দিন।",
+                                "Allow 'Alarms & Reminders' so Mosque Mode restores Normal ringer right on time."
+                            ),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = ChampagneGold,
+                                fontSize = 10.sp
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        TextButton(
+                            onClick = {
+                                try {
+                                    context.startActivity(MosqueModeScheduler.openExactAlarmSettingsIntent(context))
+                                } catch (_: Exception) {}
+                            },
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier.testTag("mosque_exact_alarm_allow_button")
+                        ) {
+                            Text(uiText("অনুমতি দিন", "Allow"), color = MintGlow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
             }
         }
 
-        // 3. Pre-Prayer Alert (15 Minutes Before Prayer Time) Card
+        // 3. Pre-Prayer Wudu & Preparation Alert (10-15 Minutes Before Jama'at Time) Card
         item {
             FrostedGlassCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -2621,8 +2659,8 @@ fun MosqueModeView(
                             )
                             Text(
                                 text = uiText(
-                                    "নামাজের ${preAlertMinutes} মিনিট পূর্বে এলার্ট",
-                                    "${preAlertMinutes} Min Pre-Prayer Alert"
+                                    "জামাতের ${preAlertMinutes} মিনিট পূর্বে প্রস্তুতি এলার্ট",
+                                    "${preAlertMinutes} Min Pre-Jama'at Prep Alert"
                                 ),
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.SemiBold,
@@ -2633,8 +2671,8 @@ fun MosqueModeView(
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = uiText(
-                                "প্রতি ওয়াক্ত শুরু হওয়ার নির্দিষ্ট সময় আগে ওযু ও প্রস্তুতির রিমাইন্ডার নোটিফিকেশন পাঠাবে।",
-                                "Sends a reminder for Wudu and prayer preparation before each prayer begins."
+                                "আপনার সেট করা জামাতের সময়ের ${preAlertMinutes} মিনিট আগে ওযু, পরিষ্কার-পরিচ্ছন্ন হওয়া ও নামাজের প্রস্তুতির এলার্ট পাঠাবে।",
+                                "Sends a Wudu and preparation alert ${preAlertMinutes} minutes before your configured Jama'at time."
                             ),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = SlateGrayMuted,

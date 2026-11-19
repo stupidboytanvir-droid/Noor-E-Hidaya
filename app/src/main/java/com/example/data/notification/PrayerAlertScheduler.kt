@@ -167,24 +167,30 @@ object PrayerAlertScheduler {
                 cancelAlarm(context, alarmManager, 2000 + prayer.ordinal * 2)
             }
 
-            // 2. Pre-Prayer Reminder (e.g. 15 minutes before prayer time)
+            // 2. Pre-Prayer Wudu & Preparation Reminder (10-15 min BEFORE Jamat time configured in Mosque Mode / Home)
             if (preAlertEnabled) {
-                val preOffsetMs = preMinutes * 60_000L
-                val preTargetItem = if (todayItem != null && (todayItem.timeMillis - preOffsetMs) > now) {
-                    todayItem
-                } else {
-                    tomorrowItem
+                val prayerCfg = configs[prayer]
+                val todayPre = todayItem?.let {
+                    resolvePrePrayerJamatTrigger(it, prayerCfg, preMinutes, is24Hour)
+                }
+                val tomorrowPre = tomorrowItem?.let {
+                    resolvePrePrayerJamatTrigger(it, prayerCfg, preMinutes, is24Hour)
                 }
 
-                if (preTargetItem != null) {
-                    val triggerAt = preTargetItem.timeMillis - preOffsetMs
+                val selectedPre = when {
+                    todayPre != null && todayPre.first > now -> todayPre
+                    else -> tomorrowPre
+                }
+
+                if (selectedPre != null) {
+                    val (triggerAt, formattedJamat) = selectedPre
                     val delayMillis = maxOf(1000L, triggerAt - now)
 
                     val preInputData = workDataOf(
                         PrayerNotificationWorker.KEY_PRAYER_NAME to prayer.name,
                         PrayerNotificationWorker.KEY_PRAYER_ARABIC to prayer.arabicName,
                         PrayerNotificationWorker.KEY_PRAYER_BENGALI to prayer.bengaliName,
-                        PrayerNotificationWorker.KEY_FORMATTED_TIME to preTargetItem.formattedTime,
+                        PrayerNotificationWorker.KEY_FORMATTED_TIME to formattedJamat,
                         PrayerNotificationWorker.KEY_IS_PRE_ALERT to true,
                         PrayerNotificationWorker.KEY_PRE_MINUTES to preMinutes
                     )
@@ -208,7 +214,7 @@ object PrayerAlertScheduler {
                         requestCode = 2000 + prayer.ordinal * 2 + 1,
                         triggerAtMillis = triggerAt,
                         prayer = prayer,
-                        formattedTime = preTargetItem.formattedTime,
+                        formattedTime = formattedJamat,
                         isPreAlert = true,
                         preMinutes = preMinutes
                     )
@@ -313,6 +319,30 @@ object PrayerAlertScheduler {
         workManager.cancelUniqueWork("prayer_daily_rescheduler_work")
     }
 
+    /**
+     * Computes the exact pre-prayer preparation alert trigger relative to the Jama'at time
+     * configured in Mosque Mode / Home screen (NOT Waqt start time).
+     */
+    fun resolvePrePrayerJamatTrigger(
+        item: com.example.data.model.PrayerTimeItem,
+        config: com.example.data.mosque.PrayerMosqueConfig?,
+        preMinutes: Int,
+        is24Hour: Boolean = false
+    ): Pair<Long, String> {
+        val safePreMins = preMinutes.coerceIn(5, 45)
+        val jamatMillis = if (item.jamatTimeMillis > 0L) {
+            item.jamatTimeMillis
+        } else {
+            val defaultOffset = config?.defaultJamatOffsetMinutes
+                ?: com.example.data.mosque.PrayerMosqueConfig.defaultJamatOffsetFor(item.prayer)
+            item.timeMillis + defaultOffset * 60_000L
+        }
+        val triggerAt = jamatMillis - safePreMins * 60_000L
+        val formattedJamat = item.formattedJamatTime.takeIf { it.isNotBlank() }
+            ?: TimeFormatUtils.formatEpochMillis(jamatMillis, is24Hour)
+        return triggerAt to formattedJamat
+    }
+
     fun triggerTestAlert(
         context: Context,
         prayer: PrayerName = PrayerName.FAJR,
@@ -323,7 +353,7 @@ object PrayerAlertScheduler {
         val uiLang = LocaleHelper.getUiLanguageSync(context)
         val isBn = com.example.data.util.SupportedLanguage.normalizeCode(uiLang) == "bn"
         val timeText = if (isPreAlert) {
-            if (isBn) "$preMinutes মি. পর" else "In $preMinutes min"
+            if (isBn) "$preMinutes মি. পর জামাত" else "Jama'at in $preMinutes min"
         } else {
             if (isBn) "এখনই ওয়াক্ত" else "Now"
         }
@@ -333,7 +363,8 @@ object PrayerAlertScheduler {
             PrayerNotificationWorker.KEY_PRAYER_BENGALI to prayer.bengaliName,
             PrayerNotificationWorker.KEY_FORMATTED_TIME to timeText,
             PrayerNotificationWorker.KEY_IS_PRE_ALERT to isPreAlert,
-            PrayerNotificationWorker.KEY_PRE_MINUTES to preMinutes
+            PrayerNotificationWorker.KEY_PRE_MINUTES to preMinutes,
+            PrayerNotificationWorker.KEY_IS_TEST to true
         )
 
         val testRequest = OneTimeWorkRequestBuilder<PrayerNotificationWorker>()

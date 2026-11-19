@@ -114,8 +114,10 @@ class AppPreferences(private val context: Context) {
         private const val SYNC_KEY_RINGER_MODE = "sync_saved_ringer_mode"
         private const val SYNC_KEY_MOSQUE_RINGER_MODE = "sync_mosque_ringer_mode"
         private const val SYNC_KEY_MOSQUE_ACTIVE = "sync_mosque_active"
+        private const val SYNC_KEY_MOSQUE_RESTORE_DEADLINE = "sync_mosque_restore_deadline"
         private const val SYNC_KEY_AUTO_REPLY_ENABLED = "sync_mosque_auto_reply_enabled"
         private const val SYNC_KEY_AUTO_REPLY_MSG = "sync_mosque_auto_reply_msg"
+        private const val NOTIF_DEDUPE_PREFS = "noor_hidayah_notif_dedupe"
 
         fun hasCompletedOnboardingSync(context: Context): Boolean {
             val sp = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
@@ -136,7 +138,7 @@ class AppPreferences(private val context: Context) {
 
         fun setSavedRingerModeSync(context: Context, mode: Int) {
             val sp = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-            sp.edit().putInt(SYNC_KEY_RINGER_MODE, mode).apply()
+            sp.edit().putInt(SYNC_KEY_RINGER_MODE, mode).commit()
         }
 
         fun getMosqueRingerModeSync(context: Context): com.example.data.mosque.MosqueRingerMode {
@@ -147,7 +149,7 @@ class AppPreferences(private val context: Context) {
 
         fun setMosqueRingerModeSync(context: Context, mode: com.example.data.mosque.MosqueRingerMode) {
             val sp = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-            sp.edit().putString(SYNC_KEY_MOSQUE_RINGER_MODE, mode.id).apply()
+            sp.edit().putString(SYNC_KEY_MOSQUE_RINGER_MODE, mode.id).commit()
         }
 
         fun isMosqueActiveSync(context: Context): Boolean {
@@ -157,7 +159,34 @@ class AppPreferences(private val context: Context) {
 
         fun setIsMosqueActiveSync(context: Context, active: Boolean) {
             val sp = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-            sp.edit().putBoolean(SYNC_KEY_MOSQUE_ACTIVE, active).apply()
+            sp.edit().putBoolean(SYNC_KEY_MOSQUE_ACTIVE, active).commit()
+        }
+
+        fun getMosqueRestoreDeadlineSync(context: Context): Long {
+            val sp = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+            return sp.getLong(SYNC_KEY_MOSQUE_RESTORE_DEADLINE, 0L)
+        }
+
+        fun setMosqueRestoreDeadlineSync(context: Context, deadlineMillis: Long) {
+            val sp = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+            sp.edit().putLong(SYNC_KEY_MOSQUE_RESTORE_DEADLINE, deadlineMillis).commit()
+        }
+
+        fun shouldAllowPrayerNotificationSync(
+            context: Context,
+            dedupeKey: String,
+            windowMs: Long = 120_000L,
+            now: Long = System.currentTimeMillis()
+        ): Boolean {
+            synchronized(this) {
+                val sp = context.getSharedPreferences(NOTIF_DEDUPE_PREFS, Context.MODE_PRIVATE)
+                val lastTs = sp.getLong(dedupeKey, 0L)
+                if (lastTs > 0L && (now - lastTs) in 0L until windowMs) {
+                    return false
+                }
+                sp.edit().putLong(dedupeKey, now).commit()
+                return true
+            }
         }
 
         fun isMosqueAutoReplySmsEnabledSync(context: Context): Boolean {
@@ -167,7 +196,7 @@ class AppPreferences(private val context: Context) {
 
         fun setMosqueAutoReplySmsEnabledSync(context: Context, enabled: Boolean) {
             val sp = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-            sp.edit().putBoolean(SYNC_KEY_AUTO_REPLY_ENABLED, enabled).apply()
+            sp.edit().putBoolean(SYNC_KEY_AUTO_REPLY_ENABLED, enabled).commit()
         }
 
         fun getMosqueAutoReplyMsgSync(context: Context): String {
@@ -177,7 +206,7 @@ class AppPreferences(private val context: Context) {
 
         fun setMosqueAutoReplyMsgSync(context: Context, msg: String) {
             val sp = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-            sp.edit().putString(SYNC_KEY_AUTO_REPLY_MSG, msg).apply()
+            sp.edit().putString(SYNC_KEY_AUTO_REPLY_MSG, msg).commit()
         }
 
         private const val SYNC_KEY_CALL_WAS_RINGING = "sync_call_was_ringing"

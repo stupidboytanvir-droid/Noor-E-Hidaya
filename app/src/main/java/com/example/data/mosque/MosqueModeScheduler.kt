@@ -47,6 +47,29 @@ object MosqueModeScheduler {
         return context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
     }
 
+    fun canScheduleExactAlarms(context: Context): Boolean {
+        val am = getAlarmManager(context) ?: return false
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            am.canScheduleExactAlarms()
+        } else {
+            true
+        }
+    }
+
+    fun openExactAlarmSettingsIntent(context: Context): Intent {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                data = android.net.Uri.parse("package:${context.packageName}")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+        } else {
+            Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = android.net.Uri.parse("package:${context.packageName}")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+        }
+    }
+
     suspend fun scheduleAllMosquePrayers(context: Context) {
         withContext(Dispatchers.IO) {
             val prefs = AppPreferences(context)
@@ -112,7 +135,7 @@ object MosqueModeScheduler {
             val alarmManager = getAlarmManager(context)
             val workManager = getWorkManager(context)
 
-            var activePrayerNow: PrayerName? = null
+            var activePrayerNow: Pair<PrayerName, Long>? = null
 
             for (prayer in PRAYERS) {
                 val config = configs[prayer] ?: PrayerMosqueConfig.defaultFor(prayer)
@@ -130,7 +153,7 @@ object MosqueModeScheduler {
                 )
 
                 if (now in silenceTarget until restoreTarget) {
-                    activePrayerNow = prayer
+                    activePrayerNow = prayer to restoreTarget
                 }
 
                 // 1. AlarmManager exact scheduling
@@ -154,13 +177,124 @@ object MosqueModeScheduler {
                 )
             }
 
-            // If we are currently inside an active Jamat window, activate immediately
-            if (activePrayerNow != null && !MosqueModeManager.isCurrentlySilenced(context)) {
+            // 3. Enforce current window state: activate if inside Jamat window, OR auto-restore if expired
+            if (activePrayerNow != null) {
+                val (activePrayer, activeRestoreTarget) = activePrayerNow
                 val uiLang = com.example.data.util.LocaleHelper.getUiLanguageSync(context)
-                val localizedPrayer = com.example.data.util.SupportedLanguage.localizedPrayerName(activePrayerNow.name, uiLang)
-                MosqueModeManager.activateMosqueMode(context, localizedPrayer)
+                val localizedPrayer = com.example.data.util.SupportedLanguage.localizedPrayerName(activePrayer.name, uiLang)
+                if (!MosqueModeManager.isCurrentlySilenced(context)) {
+                    MosqueModeManager.activateMosqueMode(
+                        context = context,
+                        prayerName = localizedPrayer,
+                        restoreAtMillis = activeRestoreTarget
+                    )
+                } else {
+                    // Keep persisted deadline synced with current window
+                    AppPreferences.setMosqueRestoreDeadlineSync(context, activeRestoreTarget)
+                }
+                armDirectRestoreBackups(
+                    context = context,
+                    prayerName = localizedPrayer,
+                    restoreTargetMillis = activeRestoreTarget,
+                    prayerOrdinal = activePrayer.ordinal
+                )
+            } else if (MosqueModeManager.isCurrentlySilenced(context)) {
+                val deadline = AppPreferences.getMosqueRestoreDeadlineSync(context)
+                // Auto-restore whenever a scheduled session's deadline expired or window no longer active
+                if (deadline > 0L) {
+                    MosqueModeManager.deactivateMosqueMode(context)
+                }
             }
+
+            // 4. Periodic 15-min watchdog to guarantee expired Mosque sessions always unlock even under aggressive OEM Doze
+            scheduleWatchdogWorker(workManager)
         }
+    }
+
+    private fun scheduleWatchdogWorker(workManager: WorkManager) {
+        val watchdogData = workDataOf(
+            MosqueModeWorker.KEY_ACTION to MosqueModeWorker.ACTION_WATCHDOG
+        )
+        val watchdogReq = PeriodicWorkRequestBuilder<MosqueModeWorker>(
+            15, TimeUnit.MINUTES
+        )
+            .setInputData(watchdogData)
+            .addTag("mosque_mode")
+            .addTag("mosque_mode_watchdog")
+            .build()
+        workManager.enqueueUniquePeriodicWork(
+            "mosque_mode_watchdog_work",
+            ExistingPeriodicWorkPolicy.KEEP,
+            watchdogReq
+        )
+    }
+
+    /**
+     * Arms triple-redundant restore triggers (primary alarm, +2 min safety alarm, and WorkManager task)
+     * right when Mosque Mode enters Vibrate/Silent so the phone is guaranteed to return to Normal mode.
+     */
+    fun armDirectRestoreBackups(
+        context: Context,
+        prayerName: String,
+        restoreTargetMillis: Long,
+        prayerOrdinal: Int = 9
+    ) {
+        val now = System.currentTimeMillis()
+        if (restoreTargetMillis <= now) {
+            MosqueModeManager.deactivateMosqueMode(context)
+            return
+        }
+
+        val alarmManager = getAlarmManager(context)
+        if (alarmManager != null) {
+            val primaryRestoreReqCode = prayerOrdinal * 10 + 2
+            val safetyRestoreReqCode = 900 + prayerOrdinal
+
+            val primaryIntent = Intent(context, MosqueModeReceiver::class.java).apply {
+                action = MosqueModeReceiver.ACTION_MOSQUE_RESTORE
+                putExtra(MosqueModeReceiver.EXTRA_PRAYER_NAME, prayerName)
+                putExtra(MosqueModeReceiver.EXTRA_PRAYER_ORDINAL, prayerOrdinal)
+            }
+            val primaryPending = PendingIntent.getBroadcast(
+                context,
+                primaryRestoreReqCode,
+                primaryIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            setExactAlarm(alarmManager, restoreTargetMillis, primaryPending)
+
+            // Secondary safety restore alarm 2 minutes after scheduled end in case primary alarm was deferred
+            val safetyIntent = Intent(context, MosqueModeReceiver::class.java).apply {
+                action = MosqueModeReceiver.ACTION_MOSQUE_RESTORE
+                putExtra(MosqueModeReceiver.EXTRA_PRAYER_NAME, prayerName)
+                putExtra(MosqueModeReceiver.EXTRA_PRAYER_ORDINAL, prayerOrdinal)
+            }
+            val safetyPending = PendingIntent.getBroadcast(
+                context,
+                safetyRestoreReqCode,
+                safetyIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            setExactAlarm(alarmManager, restoreTargetMillis + 120_000L, safetyPending)
+        }
+
+        val workManager = getWorkManager(context)
+        val restoreDelay = maxOf(2_000L, restoreTargetMillis - now)
+        val restoreData = workDataOf(
+            MosqueModeWorker.KEY_ACTION to MosqueModeWorker.ACTION_RESTORE,
+            MosqueModeWorker.KEY_PRAYER_NAME to prayerName,
+            MosqueModeWorker.KEY_PRAYER_ORDINAL to prayerOrdinal
+        )
+        val restoreReq = OneTimeWorkRequestBuilder<MosqueModeWorker>()
+            .setInitialDelay(restoreDelay, TimeUnit.MILLISECONDS)
+            .setInputData(restoreData)
+            .addTag("mosque_mode")
+            .build()
+        workManager.enqueueUniqueWork(
+            "mosque_restore_direct_$prayerOrdinal",
+            ExistingWorkPolicy.REPLACE,
+            restoreReq
+        )
     }
 
     /**
@@ -271,11 +405,13 @@ object MosqueModeScheduler {
         val uiLang = com.example.data.util.LocaleHelper.getUiLanguageSync(context)
         val localizedPrayer = com.example.data.util.SupportedLanguage.localizedPrayerName(prayer.name, uiLang)
 
-        // Silence / Vibrate Intent
+        // Silence / Vibrate Intent (carries exact restore deadline so delayed triggers never lock phone post-Jamat)
         if (silenceTarget > now) {
             val silenceIntent = Intent(context, MosqueModeReceiver::class.java).apply {
                 action = MosqueModeReceiver.ACTION_MOSQUE_SILENCE
                 putExtra(MosqueModeReceiver.EXTRA_PRAYER_NAME, localizedPrayer)
+                putExtra(MosqueModeReceiver.EXTRA_RESTORE_AT_MILLIS, restoreTarget)
+                putExtra(MosqueModeReceiver.EXTRA_PRAYER_ORDINAL, prayer.ordinal)
             }
             val silencePending = PendingIntent.getBroadcast(
                 context,
@@ -287,11 +423,12 @@ object MosqueModeScheduler {
             setExactAlarm(alarmManager, silenceTarget, silencePending)
         }
 
-        // Restore Intent
+        // Primary Restore Intent + 2-minute Safety Restore Intent
         if (restoreTarget > now) {
             val restoreIntent = Intent(context, MosqueModeReceiver::class.java).apply {
                 action = MosqueModeReceiver.ACTION_MOSQUE_RESTORE
                 putExtra(MosqueModeReceiver.EXTRA_PRAYER_NAME, localizedPrayer)
+                putExtra(MosqueModeReceiver.EXTRA_PRAYER_ORDINAL, prayer.ordinal)
             }
             val restorePending = PendingIntent.getBroadcast(
                 context,
@@ -299,8 +436,16 @@ object MosqueModeScheduler {
                 restoreIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-
             setExactAlarm(alarmManager, restoreTarget, restorePending)
+
+            val safetyReqCode = 900 + prayer.ordinal
+            val safetyPending = PendingIntent.getBroadcast(
+                context,
+                safetyReqCode,
+                restoreIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            setExactAlarm(alarmManager, restoreTarget + 120_000L, safetyPending)
         }
     }
 
@@ -340,7 +485,9 @@ object MosqueModeScheduler {
             val silenceDelay = maxOf(1000L, silenceTarget - now)
             val silenceData = workDataOf(
                 MosqueModeWorker.KEY_ACTION to MosqueModeWorker.ACTION_SILENCE,
-                MosqueModeWorker.KEY_PRAYER_NAME to localizedPrayer
+                MosqueModeWorker.KEY_PRAYER_NAME to localizedPrayer,
+                MosqueModeWorker.KEY_RESTORE_AT_MILLIS to restoreTarget,
+                MosqueModeWorker.KEY_PRAYER_ORDINAL to prayer.ordinal
             )
             val silenceRequest = OneTimeWorkRequestBuilder<MosqueModeWorker>()
                 .setInitialDelay(silenceDelay, TimeUnit.MILLISECONDS)
@@ -361,7 +508,8 @@ object MosqueModeScheduler {
             val restoreDelay = maxOf(2000L, restoreTarget - now)
             val restoreData = workDataOf(
                 MosqueModeWorker.KEY_ACTION to MosqueModeWorker.ACTION_RESTORE,
-                MosqueModeWorker.KEY_PRAYER_NAME to localizedPrayer
+                MosqueModeWorker.KEY_PRAYER_NAME to localizedPrayer,
+                MosqueModeWorker.KEY_PRAYER_ORDINAL to prayer.ordinal
             )
             val restoreRequest = OneTimeWorkRequestBuilder<MosqueModeWorker>()
                 .setInitialDelay(restoreDelay, TimeUnit.MILLISECONDS)
@@ -411,17 +559,29 @@ object MosqueModeScheduler {
                 alarmManager.cancel(restorePending)
                 restorePending.cancel()
             }
+            val safetyPending = PendingIntent.getBroadcast(
+                context,
+                900 + prayer.ordinal,
+                restoreIntent,
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            )
+            if (safetyPending != null) {
+                alarmManager.cancel(safetyPending)
+                safetyPending.cancel()
+            }
         }
 
         val workManager = getWorkManager(context)
         workManager.cancelUniqueWork("mosque_silence_${prayer.name.lowercase()}")
         workManager.cancelUniqueWork("mosque_restore_${prayer.name.lowercase()}")
+        workManager.cancelUniqueWork("mosque_restore_direct_${prayer.ordinal}")
     }
 
     fun cancelMosqueSchedule(context: Context) {
         for (prayer in PRAYERS) {
             cancelSinglePrayer(context, prayer)
         }
+        getWorkManager(context).cancelUniqueWork("mosque_mode_watchdog_work")
         MosqueModeManager.deactivateMosqueMode(context)
     }
 

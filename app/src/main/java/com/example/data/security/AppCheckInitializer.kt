@@ -39,7 +39,10 @@ private const val DEBUG_STORE_PREFIX = "com.google.firebase.appcheck.debug.store
 private const val DEBUG_SECRET_KEY = "com.google.firebase.appcheck.debug.DEBUG_SECRET"
 private const val HARNESS_PREFS_NAME = "com.example.appcheck.harness_prefs"
 private const val KEY_PROVISIONED_DEBUG_TOKEN = "has_provisioned_debug_token"
+private const val KEY_GENERATED_DEVICE_DEBUG_TOKEN = "generated_device_debug_token"
 private const val RECAPTCHA_SITE_KEY_RES = "recaptcha_site_key"
+const val FIREBASE_APP_CHECK_CONSOLE_URL =
+    "https://console.firebase.google.com/project/gen-lang-client-0043146128/appcheck/apps"
 
 object AppCheckDiagnostics {
     @Volatile
@@ -239,10 +242,8 @@ internal class ResilientRecaptchaAppCheckProvider(
         val endpoint =
             "https://firebaseappcheck.googleapis.com/v1/projects/$projectId/apps/$appId:exchangeRecaptchaEnterpriseToken?key=$apiKey"
 
-        val payload = JSONObject().apply {
-            put("recaptchaEnterpriseToken", recaptchaEnterpriseToken)
-            put("limitedUse", limitedUse)
-        }.toString().toByteArray(Charsets.UTF_8)
+        val payloadJson = buildExchangeRecaptchaPayload(recaptchaEnterpriseToken, limitedUse)
+        val payload = payloadJson.toByteArray(Charsets.UTF_8)
 
         val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
@@ -251,6 +252,9 @@ internal class ResilientRecaptchaAppCheckProvider(
             doOutput = true
             setFixedLengthStreamingMode(payload.size)
             setRequestProperty("Content-Type", "application/json")
+            getFirebaseHeartbeatHeader(firebaseApp)?.let { hb ->
+                setRequestProperty("X-Firebase-Client", hb)
+            }
             setRequestProperty("X-Android-Package", context.packageName)
             getSigningSha1Hex(context)?.let { sha1 ->
                 setRequestProperty("X-Android-Cert", sha1)
@@ -293,10 +297,55 @@ internal class ResilientRecaptchaAppCheckProvider(
     }
 }
 
+internal fun buildExchangeRecaptchaPayload(
+    recaptchaEnterpriseToken: String,
+    limitedUse: Boolean
+): String {
+    // Matches Firebase SDK's ExchangeRecaptchaTokenRequest.toJsonString() verbatim:
+    // omits "limited_use" when false, sets "limited_use": true only for limited-use tokens.
+    return JSONObject().apply {
+        put("recaptchaEnterpriseToken", recaptchaEnterpriseToken)
+        if (limitedUse) {
+            put("limited_use", true)
+        }
+    }.toString()
+}
+
+private fun getFirebaseHeartbeatHeader(firebaseApp: FirebaseApp): String? {
+    return try {
+        val defaultAppCheck = FirebaseAppCheck.getInstance(firebaseApp)
+        val method = defaultAppCheck.javaClass.getMethod("getHeartbeatControllerProvider")
+        val provider = method.invoke(defaultAppCheck) ?: return null
+        val getMethod = provider.javaClass.getMethod("get")
+        val controller = getMethod.invoke(provider) ?: return null
+        val hbTaskMethod = controller.javaClass.getMethod("getHeartBeatsHeader")
+        val hbTask = hbTaskMethod.invoke(controller) as? Task<*> ?: return null
+        Tasks.await(hbTask, 2_000L, TimeUnit.MILLISECONDS) as? String
+    } catch (_: Exception) {
+        null
+    }
+}
+
 internal fun parseTtlMillis(ttlRaw: String): Long {
     val cleaned = ttlRaw.trim().removeSuffix("s")
     val seconds = cleaned.toDoubleOrNull()?.toLong() ?: 3600L
     return (seconds.coerceAtLeast(60L)) * 1000L
+}
+
+/**
+ * Returns a persistent, valid UUID v4 App Check debug token for this device so the user can
+ * copy it with one tap and add it under Firebase Console -> App Check -> Manage debug tokens.
+ */
+fun getOrCreateDeviceDebugToken(context: Context): String {
+    val harnessPrefs = context.getSharedPreferences(HARNESS_PREFS_NAME, Context.MODE_PRIVATE)
+    val existing = harnessPrefs.getString(KEY_GENERATED_DEVICE_DEBUG_TOKEN, null)
+        ?.trim()
+        ?.takeIf { it.length >= 16 }
+    if (existing != null) return existing
+
+    val generated = java.util.UUID.randomUUID().toString()
+    harnessPrefs.edit().putString(KEY_GENERATED_DEVICE_DEBUG_TOKEN, generated).commit()
+    return generated
 }
 
 fun getSigningSha1Hex(context: Context): String? {

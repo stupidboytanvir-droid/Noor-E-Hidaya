@@ -45,6 +45,7 @@ class PrayerAlertReceiver : BroadcastReceiver() {
                             isPreAlert = isPreAlert,
                             preMinutes = preMinutes
                         )
+                        com.example.data.mosque.MosqueModeManager.restoreIfExpired(context)
                         PrayerAlertScheduler.schedulePrayerAlerts(context)
                     }
 
@@ -53,6 +54,7 @@ class PrayerAlertReceiver : BroadcastReceiver() {
                     Intent.ACTION_TIME_CHANGED,
                     Intent.ACTION_TIMEZONE_CHANGED,
                     "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" -> {
+                        com.example.data.mosque.MosqueModeManager.restoreIfExpired(context)
                         val prefs = AppPreferences(context)
                         if (prefs.prayerAlertsEnabled.first() || prefs.prePrayerAlertEnabled.first()) {
                             PrayerAlertScheduler.schedulePrayerAlerts(context)

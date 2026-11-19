@@ -273,7 +273,9 @@ fun AuthScreen(
 
                             if (errorState.isAppCheckError && com.example.BuildConfig.DEBUG) {
                                 var showDebugTokenInput by remember { mutableStateOf(false) }
-                                var debugTokenText by remember { mutableStateOf("") }
+                                var debugTokenText by remember {
+                                    mutableStateOf(com.example.data.security.getOrCreateDeviceDebugToken(context))
+                                }
                                 var tokenStatusMsg by remember { mutableStateOf<String?>(null) }
 
                                 TextButton(
@@ -287,7 +289,7 @@ fun AuthScreen(
                                         text = if (showDebugTokenInput) {
                                             uiText("Debug Token অপশন লুকান", "Hide Debug Token Option")
                                         } else {
-                                            uiText("🔑 App Check Debug Token দিয়ে সাইন-ইন করুন", "🔑 Use App Check Debug Token")
+                                            uiText("🔑 এই ফোনের Debug Token দেখুন ও লগইন করুন", "🔑 Use App Check Debug Token")
                                         },
                                         color = ChampagneGold,
                                         fontSize = 12.sp,
@@ -296,6 +298,15 @@ fun AuthScreen(
                                 }
 
                                 if (showDebugTokenInput) {
+                                    Text(
+                                        text = uiText(
+                                            "১) নিচের টোকেনটি কপি করুন → ২) Firebase Console খুলে App Check → Manage debug tokens-এ যোগ করুন → ৩) নিচের 'টোকেন সেট করুন ও গুগল লগইন করুন' বাটনে ট্যাপ করুন:",
+                                            "1) Copy this token -> 2) Open Firebase Console -> App Check -> Manage debug tokens -> Add -> 3) Tap 'Apply Token & Sign In':"
+                                        ),
+                                        color = Color(0xFFFFE0B2),
+                                        fontSize = 11.sp,
+                                        lineHeight = 15.sp
+                                    )
                                     OutlinedTextField(
                                         value = debugTokenText,
                                         onValueChange = { debugTokenText = it },
@@ -319,6 +330,65 @@ fun AuthScreen(
                                             unfocusedContainerColor = DarkEmeraldElevated
                                         )
                                     )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        OutlinedButton(
+                                            onClick = {
+                                                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE)
+                                                    as? android.content.ClipboardManager
+                                                cm?.setPrimaryClip(
+                                                    android.content.ClipData.newPlainText(
+                                                        "AppCheckDebugToken",
+                                                        debugTokenText.trim()
+                                                    )
+                                                )
+                                                tokenStatusMsg = "টোকেন কপি হয়েছে! এখন Firebase Console-এ পেস্ট করুন।"
+                                            },
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .defaultMinSize(minHeight = 48.dp)
+                                                .testTag("copy_debug_token_button"),
+                                            shape = RoundedCornerShape(8.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                                        ) {
+                                            Text(
+                                                text = uiText("কপি করুন", "Copy Token"),
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                        OutlinedButton(
+                                            onClick = {
+                                                try {
+                                                    val intent = android.content.Intent(
+                                                        android.content.Intent.ACTION_VIEW,
+                                                        android.net.Uri.parse(
+                                                            com.example.data.security.FIREBASE_APP_CHECK_CONSOLE_URL
+                                                        )
+                                                    ).apply {
+                                                        addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                    }
+                                                    context.startActivity(intent)
+                                                } catch (_: Exception) {
+                                                    tokenStatusMsg = "ব্রাউজার খুলতে সমস্যা হয়েছে।"
+                                                }
+                                            },
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .defaultMinSize(minHeight = 48.dp)
+                                                .testTag("open_firebase_console_button"),
+                                            shape = RoundedCornerShape(8.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = ChampagneGold)
+                                        ) {
+                                            Text(
+                                                text = uiText("Firebase খুলুন", "Open Console"),
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
                                     Button(
                                         onClick = {
                                             val installed = com.example.data.security.installManualDebugToken(

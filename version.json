@@ -1,6 +1,6 @@
 {
-  "versionCode": 4,
-  "versionName": "1.3",
-  "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.3/Noor-e-Hidayah-v1.3.apk",
-  "releaseNotes": "v1.3: Replaced Firebase's non-retrying reCAPTCHA App Check provider with an auto-retrying resilient provider (25s timeout + fallback), added Android 11+ Play/GMS <queries> visibility and reCAPTCHA network security domains, added pre-flight App Check verification with clear diagnostics before Google Sign-In, and extended AI Nasihah timeout."
+  "versionCode": 5,
+  "versionName": "1.4",
+  "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.4/Noor-e-Hidayah-v1.4.apk",
+  "releaseNotes": "v1.4: Fixed Mosque Mode auto-restore back to Normal ringer mode (synchronous state commits, anti-vibrate-poisoning protection, triple-redundant restore alarms + 15-min watchdog + resume recovery + exact-alarm permission prompt); separated Pre-Jama'at Wudu/preparation alerts (timed relative to Mosque Mode Jama'at time) from Waqt-start transition alerts; improved Google Sign-In App Check flow (non-blocking pre-flight, exact Firebase SDK payload/headers, 1-tap copyable Device Debug Token & Console shortcut)."
 }

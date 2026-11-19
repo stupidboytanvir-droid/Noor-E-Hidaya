@@ -119,8 +119,12 @@ class MainActivity : ComponentActivity() {
             val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner, onboardingCompleted) {
                 val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-                    if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME && onboardingCompleted) {
-                        mainViewModel.autoDetectLocationIfPermitted(force = false)
+                    if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                        com.example.data.mosque.MosqueModeManager.restoreIfExpired(this@MainActivity)
+                        toolsViewModel.syncMosqueSilencedState()
+                        if (onboardingCompleted) {
+                            mainViewModel.autoDetectLocationIfPermitted(force = false)
+                        }
                     }
                 }
                 lifecycleOwner.lifecycle.addObserver(observer)

@@ -459,20 +459,18 @@ class AuthRepository(
                     val googleCred = GoogleIdTokenCredential.createFrom(credential.data)
                     _authState.value = AuthState.Loading("নিরাপত্তা যাচাই ও লগইন সম্পন্ন হচ্ছে...")
 
-                    // Pre-acquire & verify a genuine Firebase App Check token with automatic retry.
-                    // Prevents FirebaseAuth from silently sending a dummy error placeholder token.
+                    // Warm up App Check token & capture exact attestation diagnostics,
+                    // WITHOUT blocking FirebaseAuth.signInWithCredential:
+                    // - If App Check enforcement on Authentication is off (or token succeeds), login completes.
+                    // - If App Check enforcement is active on the server and rejects the token, the catch
+                    //   block surfaces the exact App Check error plus the 1-tap Debug Token helper.
                     val appCheckResult = com.example.data.security.ensureValidAppCheckToken(context)
                     if (appCheckResult.isFailure) {
                         val cause = appCheckResult.exceptionOrNull()
                         val detail = cause?.let {
                             com.example.data.security.AppCheckDiagnostics.formatConciseError(it)
                         } ?: "Unknown App Check error"
-                        Log.e(TAG, "App Check verification failed before Google Sign-In: $detail", cause)
-                        _authState.value = AuthState.Error(
-                            message = buildAppCheckFriendlyMessage(detail),
-                            isAppCheckError = true
-                        )
-                        return@launch
+                        Log.w(TAG, "App Check pre-flight failed (continuing to FirebaseAuth): $detail", cause)
                     }
 
                     val firebaseCred = GoogleAuthProvider.getCredential(googleCred.idToken, null)
@@ -521,7 +519,9 @@ class AuthRepository(
             } catch (e: Exception) {
                 Log.e(TAG, "Google Sign-In failed: ${e.message}", e)
                 val errMsg = e.message.orEmpty()
-                val isAppCheck = errMsg.contains("App Check", ignoreCase = true)
+                val isAppCheck = errMsg.contains("App Check", ignoreCase = true) ||
+                    errMsg.contains("attestation", ignoreCase = true) ||
+                    errMsg.contains("403", ignoreCase = true)
                 val friendlyMsg = if (isAppCheck) {
                     val lastDetail = com.example.data.security.AppCheckDiagnostics.lastErrorMessage
                         ?.takeIf { it.isNotBlank() }
@@ -543,7 +543,7 @@ class AuthRepository(
         return when {
             clean.contains("HTTP 403", ignoreCase = true) ||
                 clean.contains("attestation failed", ignoreCase = true) ->
-                "Firebase App Check এই ডিভাইসের নিরাপত্তা টোকেন অনুমোদন করেনি ($clean)। প্লে-স্টোর ছাড়া ইনস্টল করা ডিবাগ APK হলে নিচে Firebase Console থেকে রেজিস্টার্ড Debug Token বসিয়ে অথবা Firebase Console-এ App Check → Authentication এনফোর্সমেন্ট চেক করে আবার চেষ্টা করুন।"
+                "Firebase সার্ভার প্লে-স্টোর ছাড়া ইনস্টল করা ডিবাগ APK-এর নিরাপত্তা টোকেন আটকে দিয়েছে ($clean)। সমাধান: (১) Firebase Console → App Check → APIs → Authentication-এ Unenforce করুন, অথবা (২) নিচের বাটন থেকে এই ফোনের Debug Token কপি করে Firebase Console-এ যোগ করে লগইন করুন।"
             clean.contains("NETWORK", ignoreCase = true) ||
                 clean.contains("timeout", ignoreCase = true) ||
                 clean.contains("Unable to resolve host", ignoreCase = true) ->

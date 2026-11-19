@@ -52,6 +52,8 @@ object MosqueModeManager {
         return am?.ringerMode ?: AudioManager.RINGER_MODE_NORMAL
     }
 
+    private val stateLock = Any()
+
     fun isCurrentlySilenced(context: Context): Boolean {
         return AppPreferences.isMosqueActiveSync(context)
     }
@@ -59,59 +61,143 @@ object MosqueModeManager {
     fun activateMosqueMode(
         context: Context,
         prayerName: String = "নামাজ",
-        preferredMode: MosqueRingerMode = AppPreferences.getMosqueRingerModeSync(context)
+        preferredMode: MosqueRingerMode = AppPreferences.getMosqueRingerModeSync(context),
+        restoreAtMillis: Long = 0L
     ) {
-        val am = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+        synchronized(stateLock) {
+            val now = System.currentTimeMillis()
+            // Guard: if a delayed alarm/worker fires AFTER the Jamat window already ended,
+            // never enter silence/vibrate — ensure Normal mode is restored instead.
+            if (restoreAtMillis > 0L && now >= restoreAtMillis) {
+                deactivateMosqueMode(context)
+                return
+            }
 
-        // 1. Capture and save current ringer mode before switching if not already active
-        val wasActive = AppPreferences.isMosqueActiveSync(context)
-        if (!wasActive && am != null) {
-            val currentMode = am.ringerMode
-            AppPreferences.setSavedRingerModeSync(context, currentMode)
-        }
-        AppPreferences.setIsMosqueActiveSync(context, true)
+            val am = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
 
-        // 2. Apply user's chosen Mosque Mode: VIBRATE or SILENT (without triggering DND filter)
-        var appliedMode = preferredMode
-        if (preferredMode == MosqueRingerMode.VIBRATE) {
-            try {
-                am?.ringerMode = AudioManager.RINGER_MODE_VIBRATE
-            } catch (_: Exception) {}
-        } else {
-            // SILENT requested
-            try {
-                am?.ringerMode = AudioManager.RINGER_MODE_SILENT
-            } catch (_: Exception) {
-                // Graceful fallback to Vibrate if OS restricts silent mode without sound policy access
-                appliedMode = MosqueRingerMode.VIBRATE
+            // 1. Capture and save current ringer mode ONLY on initial transition into Mosque Mode.
+            // Never save the target Mosque mode itself (VIBRATE/SILENT), which would trap the device forever.
+            val wasActive = AppPreferences.isMosqueActiveSync(context)
+            if (!wasActive && am != null) {
+                val currentMode = am.ringerMode
+                val targetOsMode = if (preferredMode == MosqueRingerMode.VIBRATE) {
+                    AudioManager.RINGER_MODE_VIBRATE
+                } else {
+                    AudioManager.RINGER_MODE_SILENT
+                }
+                val modeToSave = if (currentMode == targetOsMode) {
+                    AudioManager.RINGER_MODE_NORMAL
+                } else {
+                    currentMode
+                }
+                AppPreferences.setSavedRingerModeSync(context, modeToSave)
+            }
+            AppPreferences.setIsMosqueActiveSync(context, true)
+            if (restoreAtMillis > 0L) {
+                AppPreferences.setMosqueRestoreDeadlineSync(context, restoreAtMillis)
+            }
+
+            // 2. Apply user's chosen Mosque Mode: VIBRATE or SILENT
+            var appliedMode = preferredMode
+            if (preferredMode == MosqueRingerMode.VIBRATE) {
                 try {
                     am?.ringerMode = AudioManager.RINGER_MODE_VIBRATE
                 } catch (_: Exception) {}
+            } else {
+                try {
+                    am?.ringerMode = AudioManager.RINGER_MODE_SILENT
+                } catch (_: Exception) {
+                    appliedMode = MosqueRingerMode.VIBRATE
+                    try {
+                        am?.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                    } catch (_: Exception) {}
+                }
             }
-        }
 
-        // 3. Post discreet ongoing notification
-        showMosqueNotification(context, prayerName, appliedMode)
+            // 3. Post discreet ongoing notification
+            showMosqueNotification(context, prayerName, appliedMode)
+        }
     }
 
     fun deactivateMosqueMode(context: Context) {
-        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-        val am = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+        synchronized(stateLock) {
+            val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            val am = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
 
-        // 1. Restore previous ringer mode captured before entering Mosque Mode
-        val savedMode = AppPreferences.getSavedRingerModeSync(context)
-        try {
-            am?.ringerMode = savedMode
-        } catch (_: Exception) {
+            // 1. Determine safe restore target — never stay trapped in the Mosque target mode
+            val savedMode = AppPreferences.getSavedRingerModeSync(context)
+            val configuredMosqueMode = AppPreferences.getMosqueRingerModeSync(context)
+            val mosqueTargetOsMode = if (configuredMosqueMode == MosqueRingerMode.VIBRATE) {
+                AudioManager.RINGER_MODE_VIBRATE
+            } else {
+                AudioManager.RINGER_MODE_SILENT
+            }
+            val targetMode = when {
+                savedMode == mosqueTargetOsMode -> AudioManager.RINGER_MODE_NORMAL
+                savedMode == AudioManager.RINGER_MODE_NORMAL ||
+                    savedMode == AudioManager.RINGER_MODE_VIBRATE ||
+                    savedMode == AudioManager.RINGER_MODE_SILENT -> savedMode
+                else -> AudioManager.RINGER_MODE_NORMAL
+            }
+
+            // Clear DND interruption filter first if active & permitted (prevents OEMs from blocking Normal ringer)
             try {
-                am?.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                if (nm != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                    nm.isNotificationPolicyAccessGranted &&
+                    nm.currentInterruptionFilter != NotificationManager.INTERRUPTION_FILTER_ALL
+                ) {
+                    nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+                }
             } catch (_: Exception) {}
+
+            // 2. Restore ringer mode and ensure audible ring volume when restoring NORMAL
+            try {
+                am?.ringerMode = targetMode
+            } catch (_: Exception) {
+                try {
+                    am?.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                } catch (_: Exception) {}
+            }
+
+            if (targetMode == AudioManager.RINGER_MODE_NORMAL && am != null) {
+                try {
+                    val maxRing = am.getStreamMaxVolume(AudioManager.STREAM_RING)
+                    if (maxRing > 0 && am.getStreamVolume(AudioManager.STREAM_RING) == 0) {
+                        am.setStreamVolume(
+                            AudioManager.STREAM_RING,
+                            maxOf(1, maxRing / 2),
+                            0
+                        )
+                    }
+                    if (am.ringerMode != AudioManager.RINGER_MODE_NORMAL) {
+                        am.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                    }
+                } catch (_: Exception) {}
+            }
+
+            AppPreferences.setIsMosqueActiveSync(context, false)
+            AppPreferences.setMosqueRestoreDeadlineSync(context, 0L)
+            AppPreferences.setSavedRingerModeSync(context, AudioManager.RINGER_MODE_NORMAL)
+
+            // 3. Remove ongoing Mosque notification
+            nm?.cancel(NOTIFICATION_ID)
         }
+    }
 
-        AppPreferences.setIsMosqueActiveSync(context, false)
-
-        // 2. Remove notification
-        nm?.cancel(NOTIFICATION_ID)
+    /**
+     * Checks if a scheduled Mosque Mode session has passed its restore deadline and immediately
+     * unlocks back to Normal ringer mode. Safe to call on resume, receivers, and watchdog workers.
+     */
+    fun restoreIfExpired(context: Context, now: Long = System.currentTimeMillis()): Boolean {
+        synchronized(stateLock) {
+            if (!AppPreferences.isMosqueActiveSync(context)) return false
+            val deadline = AppPreferences.getMosqueRestoreDeadlineSync(context)
+            if (deadline > 0L && now >= deadline) {
+                deactivateMosqueMode(context)
+                return true
+            }
+            return false
+        }
     }
 
     private fun showMosqueNotification(

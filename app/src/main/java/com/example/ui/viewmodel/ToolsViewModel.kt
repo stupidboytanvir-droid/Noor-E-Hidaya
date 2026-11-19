@@ -395,6 +395,11 @@ class ToolsViewModel(application: Application) : AndroidViewModel(application) {
         _isMosqueSilencedNow.value = false
     }
 
+    fun syncMosqueSilencedState() {
+        com.example.data.mosque.MosqueModeManager.restoreIfExpired(getApplication())
+        _isMosqueSilencedNow.value = com.example.data.mosque.MosqueModeManager.isCurrentlySilenced(getApplication())
+    }
+
     fun refreshLastAutoSmsStatus() {
         _lastAutoSmsStatus.value = AppPreferences.getLastAutoSmsStatusSync(getApplication())
     }
