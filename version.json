@@ -8,10 +8,10 @@
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.0.9",
-    "versionCode": 11,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.0.9/Noor-e-Hidayah-v1.0.9.apk",
-    "releaseNotesEn": "Admin Studio update channel (exclusive to verified primary admin).",
-    "releaseNotesBn": "এডমিন স্টুডিও আপডেট চ্যানেল (শুধুমাত্র ভেরিফাইড প্রাইমারি এডমিনের জন্য)।"
+    "versionName": "1.0.10-admin",
+    "versionCode": 12,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.0.10-admin/Noor-e-Hidayah-v1.0.10-admin.apk",
+    "releaseNotesEn": "Admin Video Director: AQ./AIza Gemini API fix & high-contrast Outro logo/text polish",
+    "releaseNotesBn": "অ্যাডমিন ভিডিও ডিরেক্টর: Gemini API ফিক্স এবং আউট্রো লোগো ও টেক্সট আপগ্রেড"
   }
 }
