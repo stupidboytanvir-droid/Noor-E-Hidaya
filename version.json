@@ -8,10 +8,10 @@
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.0.11-admin",
-    "versionCode": 13,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.0.11-admin/Noor-e-Hidayah-v1.0.11-admin.apk",
-    "releaseNotesEn": "Admin Video Director: Auto Gemini ListModels discovery & HTTP 404 model deprecation fix",
-    "releaseNotesBn": "অ্যাডমিন ভিডিও ডিরেক্টর: অটো Gemini মডেল ডিসকভারি এবং HTTP 404 ফিক্স"
+    "versionName": "1.0.12-admin",
+    "versionCode": 14,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.0.12-admin/Noor-e-Hidayah-v1.0.12-admin.apk",
+    "releaseNotesEn": "Clean Short Website (noorehidayah.github.io), Hands-Free Telegram Auto-Pilot (WorkManager), 32-Quiz Bank, Official Welcome & Custom Pin Composer, Dual Viral Buttons, and Fixed 0-Based MP4 Audio/Duration Export",
+    "releaseNotesBn": "নতুন শর্ট ওয়েবসাইট (noorehidayah.github.io), অটোনোমাস টেলিগ্রাম অটো-পাইলট, ৩২+ ইসলামিক কুইজ, ওয়েলকাম ও কাস্টম পোস্ট পিন কম্পোজার, ভাইরাল শেয়ার বাটন এবং MP4 অডিও ও ডিউরেশন ফিক্স"
   }
 }
