@@ -1,14 +1,14 @@
 {
-  "tag_name": "v1.0.9",
-  "name": "Version 1.0.9",
-  "published_at": "2026-11-25T14:30:00Z",
-  "html_url": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/tag/v1.0.9",
-  "body": "### What's New in Version 1.0.9\n- **1-Tap Hadith & Nasihah Status Cards with QR:** Instantly transform Today's Authentic Hadith and Believer's Nasihah into high-resolution, ready-to-post Islamic image cards in both **9:16 Story / WhatsApp Status** and **1:1 Feed Post** formats across 3 curated Islamic themes, complete with a scannable QR code and offline gallery save.\n- **Mosque Mode Auto-SMS Signature:** Automatic missed-call replies during prayer now include an optional, user-toggleable Noor-e-Hidayah Mosque Mode signature so friends and family can discover the free, ad-free app naturally.\n- **Upgraded 7-Model Tasbih QR Share Cards:** Enhanced completion reward cards across all 7 interactive Tasbih models (Classic, Soften Your Heart, Three-Jar Fatimah, Garden of Jannah, Scales of Mizan, Lantern of Noor & Ripples of Sakina) with crisp branded footers and scannable QR codes.\n- **Sadaqah Jariyah — Invite a Friend:** Share Noor-e-Hidayah with loved ones in one tap from Settings using a dedicated branded Islamic invitation card and direct download link.\n- **Cleaner Islamic Toolbox & Notification Settings:** Reminders are now organized directly inside Settings → Notification Settings for a cleaner Toolbox layout, alongside smarter in-app update reliability.",
+  "tag_name": "v1.1.0",
+  "name": "Noor-e-Hidayah v1.1.0",
+  "published_at": "2026-11-26T19:31:49Z",
+  "html_url": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/tag/v1.1.0",
+  "body": "### What's New in Noor-e-Hidayah v1.1.0\n- **Free WhatsApp & Messenger Auto-Reply in Mosque Mode (Zero SIM Cost):** Automatically sends polite prayer-time replies on WhatsApp and Messenger while you are in Salah without spending SMS balance.\n- **Built-In Localized In-App Rating & Review System:** Share your rating and feedback directly inside Noor-e-Hidayah in English or Bangla.\n- **Live Dynamic App Version in Settings:** Settings now automatically displays your exact installed app version and build number.\n- **Official Telegram Channel Link:** Quick access to our Official Telegram Channel for daily Hadith, Islamic reminders, and instant app updates.\n\n### নতুন যা যুক্ত হয়েছে (সংস্করণ ১.১.০)\n- **মসজিদ মোডে ফ্রি WhatsApp ও Messenger অটো-রিপ্লাই (০ টাকা খরচ):** নামাজের সময় কোনো সিম ব্যালেন্স ছাড়াই বিনয়ী অটো-রিপ্লাই।\n- **বিল্ট-ইন অ্যাপ রেটিং ও রিভিউ সিস্টেম:** অ্যাপের ভেতর থেকেই আপনার মতামত ও রেটিং দিন।\n- **সেটিংসে আসল অ্যাপ ভার্সন ডিসপ্লে:** এখন থেকে সেটিংসে সরাসরি ইনস্টল করা আসল ভার্সন দেখা যাবে।\n- **অফিশিয়াল টেলিগ্রাম চ্যানেল লিংক:** দৈনিক হাদিস ও নতুন আপডেটের জন্য সরাসরি যুক্ত হন।",
   "assets": [
     {
-      "name": "Noor-e-Hidayah-v1.0.9.apk",
-      "size": 38346938,
-      "browser_download_url": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.0.9/Noor-e-Hidayah-v1.0.9.apk"
+      "name": "Noor-e-Hidayah-v1.1.0.apk",
+      "size": 37161844,
+      "browser_download_url": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.1.0/Noor-e-Hidayah-v1.1.0.apk"
     }
   ]
 }

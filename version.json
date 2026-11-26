@@ -1,17 +1,17 @@
 {
   "publicRelease": {
-    "versionName": "1.0.9",
-    "versionCode": 11,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.0.9/Noor-e-Hidayah-v1.0.9.apk",
-    "releaseNotesEn": "Version 1.0.9: 1-Tap Today's Hadith & Believer's Nasihah Status Cards (9:16 Story & 1:1 Post with scannable QR code), Mosque Mode Auto-SMS Signature, Upgraded 7-Model Tasbih QR Share Cards, and Sadaqah Jariyah Invite a Friend.",
-    "releaseNotesBn": "সংস্করণ ১.০.৯: ১-ট্যাপ হাদিস ও নসিহত স্ট্যাটাস শেয়ার কার্ড (৯:১৬ স্টোরি ও ১:১ পোস্ট + কিউআর কোড), মসজিদ মোড অটো-SMS সিগনেচার, আপগ্রেডেড ৭-মডেল তাসবিহ কিউআর শেয়ার কার্ড এবং সদকায়ে জারিয়াহ (Invite a Friend) শেয়ার ফিচার!",
+    "versionName": "1.1.0",
+    "versionCode": 17,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.1.0/Noor-e-Hidayah-v1.1.0.apk",
+    "releaseNotesEn": "Free WhatsApp & Messenger auto-reply in Mosque Mode (zero SIM cost), built-in localized In-App Rating & Review system, live dynamic app version in Settings, and Official Telegram Channel link for daily Hadith & updates.",
+    "releaseNotesBn": "মসজিদ মোডে ফ্রি WhatsApp ও Messenger অটো-রিপ্লাই (০ টাকা খরচ), বিল্ট-ইন অ্যাপ রেটিং ও রিভিউ সিস্টেম, সেটিংসে আসল অ্যাপ ভার্সন ডিসপ্লে এবং দৈনিক হাদিস ও আপডেটের জন্য অফিশিয়াল টেলিগ্রাম চ্যানেল লিংক।",
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.0.14-admin",
-    "versionCode": 16,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.0.14-admin/Noor-e-Hidayah-v1.0.14-admin.apk",
-    "releaseNotesEn": "Video Director: Fixed music selection bug, added Zero-APK-Bloat unlimited Custom Nasheed/Music Library with auto-rotation, 5 distinct built-in Halal ambient presets, and SmartAudioMixer (silence trim, exact duration fit, smooth crossfade loop, 1.5s fade-in & 2.5s fade-out)",
-    "releaseNotesBn": "ভিডিও ডিরেক্টর: মিউজিক সিলেকশন বাগ ফিক্স, আনলিমিটেড কাস্টম মিউজিক লাইব্রেরি (০ এমবি APK সাইজ), অটো-রোটেট, ৫টি আলাদা বিল্ট-ইন সাউন্ডস্কেপ এবং স্মুথ ফেড-ইন/ফেড-আউট অডিও মিক্সার"
+    "versionName": "1.1.0",
+    "versionCode": 17,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.1.0/Noor-e-Hidayah-v1.1.0.apk",
+    "releaseNotesEn": "Free WhatsApp & Messenger auto-reply in Mosque Mode (zero SIM cost), built-in localized In-App Rating & Review system, live dynamic app version in Settings, and Official Telegram Channel link for daily Hadith & updates.",
+    "releaseNotesBn": "মসজিদ মোডে ফ্রি WhatsApp ও Messenger অটো-রিপ্লাই (০ টাকা খরচ), বিল্ট-ইন অ্যাপ রেটিং ও রিভিউ সিস্টেম, সেটিংসে আসল অ্যাপ ভার্সন ডিসপ্লে এবং দৈনিক হাদিস ও আপডেটের জন্য অফিশিয়াল টেলিগ্রাম চ্যানেল লিংক।"
   }
 }
