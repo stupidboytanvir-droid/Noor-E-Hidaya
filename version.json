@@ -8,10 +8,10 @@
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.0.13-admin",
-    "versionCode": 15,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.0.13-admin/Noor-e-Hidayah-v1.0.13-admin.apk",
-    "releaseNotesEn": "Redesigned clean 4-tab Bot & Share Hub (removed TikTok API), ready-made multi-platform share templates for Photo/Carousel/Video, free Facebook Page Auto-Pilot, Friday Jummah auto-events, and free WhatsApp/Messenger Mosque Mode auto-reply",
-    "releaseNotesBn": "নতুন ৪-ট্যাব Bot & Share Hub ডিজাইন, ফটো/ক্যারোসেল/ভিডিও রেডিমেড শেয়ার টেমপ্লেট, ফ্রি ফেসবুক পেজ অটো-পাইলট, জুম্মা অটো-ইভেন্ট এবং মসজিদ মোডে ফ্রি WhatsApp/Messenger অটো-রিপ্লাই"
+    "versionName": "1.0.14-admin",
+    "versionCode": 16,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.0.14-admin/Noor-e-Hidayah-v1.0.14-admin.apk",
+    "releaseNotesEn": "Video Director: Fixed music selection bug, added Zero-APK-Bloat unlimited Custom Nasheed/Music Library with auto-rotation, 5 distinct built-in Halal ambient presets, and SmartAudioMixer (silence trim, exact duration fit, smooth crossfade loop, 1.5s fade-in & 2.5s fade-out)",
+    "releaseNotesBn": "ভিডিও ডিরেক্টর: মিউজিক সিলেকশন বাগ ফিক্স, আনলিমিটেড কাস্টম মিউজিক লাইব্রেরি (০ এমবি APK সাইজ), অটো-রোটেট, ৫টি আলাদা বিল্ট-ইন সাউন্ডস্কেপ এবং স্মুথ ফেড-ইন/ফেড-আউট অডিও মিক্সার"
   }
 }
