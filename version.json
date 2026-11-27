@@ -8,10 +8,10 @@
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.2.1-admin",
-    "versionCode": 20,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.2.1-admin/Noor-e-Hidayah-v1.2.1-admin.apk",
-    "releaseNotesEn": "Fixed Master Gemini AI strict JSON parsing (gemini-2.5-flash + thought-part cleaner), Phone Online Heartbeat for GitHub Cloud Failover, and 1-Tap Cloud Music Library Backup/Restore.",
-    "releaseNotesBn": "Master Gemini AI JSON ফিক্স, গিটহাব ক্লাউড ফেইলওভারের জন্য Phone Heartbeat সিঙ্ক এবং ১-ট্যাপ ক্লাউড মিউজিক লাইব্রেরি ব্যাকআপ/রিস্টোর।"
+    "versionName": "1.2.2-admin",
+    "versionCode": 21,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.2.2-admin/Noor-e-Hidayah-v1.2.2-admin.apk",
+    "releaseNotesEn": "Guaranteed daily 4+ auto-rendered Reels Vault queue with 1-tap FB/TikTok/Share & pre-generated captions/hashtags, Infinite Auto-Mood Deep Reflection visuals, auto-advance topic after render, Telegram Silent Delivery, 2-way bot commands, and Crash Logger.",
+    "releaseNotesBn": "প্রতিদিন ৪+ অটো-রেন্ডার্ড রিলস ভল্ট কিউ (রেডি ক্যাপশন ও হ্যাশট্যাগসহ ১-ট্যাপ শেয়ার), আত্মশুদ্ধির আনলিমিটেড Auto-Mood ব্যাকগ্রাউন্ড, রেন্ডারের পর অটো টপিক চেঞ্জ, টেলিগ্রাম সাইলেন্ট পোস্ট, ২-ওয়ে বট কমান্ড এবং ক্র্যাশ লগার।"
   }
 }
