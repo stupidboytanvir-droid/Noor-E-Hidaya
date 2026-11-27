@@ -8,10 +8,10 @@
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.1.0",
-    "versionCode": 17,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.1.0/Noor-e-Hidayah-v1.1.0.apk",
-    "releaseNotesEn": "Free WhatsApp & Messenger auto-reply in Mosque Mode (zero SIM cost), built-in localized In-App Rating & Review system, live dynamic app version in Settings, and Official Telegram Channel link for daily Hadith & updates.",
-    "releaseNotesBn": "মসজিদ মোডে ফ্রি WhatsApp ও Messenger অটো-রিপ্লাই (০ টাকা খরচ), বিল্ট-ইন অ্যাপ রেটিং ও রিভিউ সিস্টেম, সেটিংসে আসল অ্যাপ ভার্সন ডিসপ্লে এবং দৈনিক হাদিস ও আপডেটের জন্য অফিশিয়াল টেলিগ্রাম চ্যানেল লিংক।"
+    "versionName": "1.1.1-admin",
+    "versionCode": 18,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.1.1-admin/Noor-e-Hidayah-v1.1.1-admin.apk",
+    "releaseNotesEn": "Hijri Calendar Auto-Sync (Jummah, Ramadan Ashras, Shab-e-Barat/Meraj, Eid), randomized 8-15 daily Auto-Pilot slots (removed duplicate 4 Core Anchor Slots & removed Reels from Telegram), Full HD 1080p luxury Islamic calligraphy visuals, removed bottom timing bar, live audio preview sync, and permanent Firebase RTDB rules helper.",
+    "releaseNotesBn": "হিজরি ক্যালেন্ডার অটো-সিঙ্ক (জুম্মা, রমজানের ৩ আশরা, শবে বরাত/মেরাজ ও ঈদ), দিনে ৮–১৫টি র্যান্ডম অটো-পাইলট শিডিউল, Full HD 1080p প্রিমিয়াম ইসলামিক ক্যালিগ্রাফি ডিজাইন, ভিডিওর টাইমিং বার রিমুভ, লাইভ অডিও প্রিভিউ সিঙ্ক এবং পার্মানেন্ট Firebase রুলস হেল্পার।"
   }
 }
