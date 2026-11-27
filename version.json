@@ -8,10 +8,10 @@
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.2.0",
-    "versionCode": 19,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.2.0/Noor-e-Hidayah-v1.2.0.apk",
-    "releaseNotesEn": "New Home-Screen Prayer Time & Next Waqt Countdown Widget, 1-Tap Branded Islamic Photo Card Share for Hadith/Quran/Dua, Daily 5-Waqt Namaz & Zikir Streak Tracker, Live In-App Notices, and major stability upgrades.",
-    "releaseNotesBn": "নতুন হোম-স্ক্রিন নামাজের সময় ও কাউন্টডাউন উইজেট, ১-ট্যাপে হাদিস/কুরআন/দোয়ার ইসলামিক ফটো কার্ড শেয়ার, দৈনিক ৫ ওয়াক্ত নামাজ ও জিকির স্ট্রিক ট্র্যাকার, লাইভ নোটিশ এবং পারফরম্যান্স আপগ্রেড।"
+    "versionName": "1.2.1-admin",
+    "versionCode": 20,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.2.1-admin/Noor-e-Hidayah-v1.2.1-admin.apk",
+    "releaseNotesEn": "Fixed Master Gemini AI strict JSON parsing (gemini-2.5-flash + thought-part cleaner), Phone Online Heartbeat for GitHub Cloud Failover, and 1-Tap Cloud Music Library Backup/Restore.",
+    "releaseNotesBn": "Master Gemini AI JSON ফিক্স, গিটহাব ক্লাউড ফেইলওভারের জন্য Phone Heartbeat সিঙ্ক এবং ১-ট্যাপ ক্লাউড মিউজিক লাইব্রেরি ব্যাকআপ/রিস্টোর।"
   }
 }
