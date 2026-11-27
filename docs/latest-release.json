@@ -1,14 +1,14 @@
 {
-  "tag_name": "v1.1.0",
-  "name": "Noor-e-Hidayah v1.1.0",
-  "published_at": "2026-11-26T19:31:49Z",
-  "html_url": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/tag/v1.1.0",
-  "body": "### What's New in Noor-e-Hidayah v1.1.0\n- **Free WhatsApp & Messenger Auto-Reply in Mosque Mode (Zero SIM Cost):** Automatically sends polite prayer-time replies on WhatsApp and Messenger while you are in Salah without spending SMS balance.\n- **Built-In Localized In-App Rating & Review System:** Share your rating and feedback directly inside Noor-e-Hidayah in English or Bangla.\n- **Live Dynamic App Version in Settings:** Settings now automatically displays your exact installed app version and build number.\n- **Official Telegram Channel Link:** Quick access to our Official Telegram Channel for daily Hadith, Islamic reminders, and instant app updates.\n\n### নতুন যা যুক্ত হয়েছে (সংস্করণ ১.১.০)\n- **মসজিদ মোডে ফ্রি WhatsApp ও Messenger অটো-রিপ্লাই (০ টাকা খরচ):** নামাজের সময় কোনো সিম ব্যালেন্স ছাড়াই বিনয়ী অটো-রিপ্লাই।\n- **বিল্ট-ইন অ্যাপ রেটিং ও রিভিউ সিস্টেম:** অ্যাপের ভেতর থেকেই আপনার মতামত ও রেটিং দিন।\n- **সেটিংসে আসল অ্যাপ ভার্সন ডিসপ্লে:** এখন থেকে সেটিংসে সরাসরি ইনস্টল করা আসল ভার্সন দেখা যাবে।\n- **অফিশিয়াল টেলিগ্রাম চ্যানেল লিংক:** দৈনিক হাদিস ও নতুন আপডেটের জন্য সরাসরি যুক্ত হন।",
+  "tag_name": "v1.2.0",
+  "name": "Noor-e-Hidayah v1.2.0",
+  "published_at": "2026-11-27T10:51:54Z",
+  "html_url": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/tag/v1.2.0",
+  "body": "### What's New in Noor-e-Hidayah v1.2.0\n- **Home-Screen Prayer Time & Next Waqt Countdown Widget:** Lightweight dark emerald & gold Android widget displaying all 5 Waqt times, Next Waqt countdown, and Hijri Date right on your home screen.\n- **1-Tap Branded Islamic Photo Card Share (Sadaqah Jariyah):** Share crisp 1080×1350 branded photo cards or plain text directly from Hadith, Quran Ayah, and Dua screens.\n- **Daily 5-Waqt Namaz & Zikir Streak Tracker:** Track your daily prayers and morning/evening Zikir with an interactive streak tracker on the Home screen.\n- **Live In-App Notices & Major Stability Upgrades:** Real-time community announcements plus major performance and reliability improvements.\n\n### নতুন যা যুক্ত হয়েছে (সংস্করণ ১.২.০)\n- **হোম-স্ক্রিন নামাজের সময় ও কাউন্টডাউন উইজেট:** সরাসরি ফোনের হোম-স্ক্রিনেই দেখুন ৫ ওয়াক্ত নামাজের সময়, পরবর্তী ওয়াক্তের কাউন্টডাউন এবং হিজরি তারিখ।\n- **১-ট্যাপে ব্র্যান্ডেড ইসলামিক ফটো কার্ড শেয়ার (সদকায়ে জারিয়া):** হাদিস, কুরআনের আয়াত ও দোয়া থেকে এক ট্যাপেই ১০৮০×১৩৫০ প্রিমিয়াম ফটো কার্ড বা টেক্সট শেয়ার করুন।\n- **দৈনিক ৫ ওয়াক্ত নামাজ ও জিকির স্ট্রিক ট্র্যাকার:** হোম-স্ক্রিনেই প্রতিদিন নামাজ ও জিকিরের অভ্যাস ও স্ট্রিক ট্র্যাক করুন।\n- **লাইভ নোটিশ ও পারফরম্যান্স আপগ্রেড:** তাৎক্ষণিক গুরুত্বপূর্ণ নোটিশ এবং আরও দ্রুত ও স্থিতিশীল অভিজ্ঞতা।",
   "assets": [
     {
-      "name": "Noor-e-Hidayah-v1.1.0.apk",
-      "size": 37161844,
-      "browser_download_url": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.1.0/Noor-e-Hidayah-v1.1.0.apk"
+      "name": "Noor-e-Hidayah-v1.2.0.apk",
+      "size": 37411474,
+      "browser_download_url": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.2.0/Noor-e-Hidayah-v1.2.0.apk"
     }
   ]
 }

@@ -356,7 +356,7 @@
         typeof asset.browser_download_url === "string"
     );
 
-    const tagName = typeof data.tag_name === "string" && data.tag_name.trim() ? data.tag_name.trim() : "v1.1.0";
+    const tagName = typeof data.tag_name === "string" && data.tag_name.trim() ? data.tag_name.trim() : "v1.2.0";
     const releaseName = typeof data.name === "string" && data.name.trim() ? data.name.trim() : `Version ${tagName.replace(/^v/i, "")}`;
     const publishedAt = typeof data.published_at === "string" ? data.published_at : "";
     const htmlUrl =
