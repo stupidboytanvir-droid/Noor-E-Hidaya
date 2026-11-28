@@ -8,10 +8,10 @@
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.3.1-admin",
-    "versionCode": 24,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.3.1-admin/Noor-e-Hidayah-v1.3.1-admin.apk",
-    "releaseNotesEn": "Admin Studio v1.3.1: Zero-config key-only AI setup with automatic Gemini (gemini-flash-latest via X-goog-api-key) -> DeepSeek -> OpenRouter routing (App & Cloud), fixed symmetric 9:16 centered video safe zone with upgraded cinematic bokeh/glassmorphism across App Video, Reels & Cloud FFmpeg, and complete Facebook Page Custom Publish Mode (Feed, Reels, Story, Photo/Video/Vault picker, Pin to Top, Auto First-Comment & Schedule).",
-    "releaseNotesBn": "অ্যাডমিন স্টুডিও v1.3.1: জিরো-কনফিগ কি-অনলি অটো-মডেল AI (Gemini -> DeepSeek -> OpenRouter, অ্যাপ ও ক্লাউড), নিখুঁত সেন্টারড 9:16 সেফ-জোনসহ আপগ্রেডেড সিনেমাটিক বোকেহ ও গ্লাসমর্ফিজম ভিডিও ইঞ্জিন, এবং সম্পূর্ণ Facebook Page Custom Publish মোড (Feed, Reels, Story, ছবি/ভিডিও/ভল্ট পিকার, Pin to Top, অটো ফার্স্ট-কমেন্ট ও শিডিউল)।"
+    "versionName": "1.4.0-admin",
+    "versionCode": 25,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.4.0-admin/Noor-e-Hidayah-v1.4.0-admin.apk",
+    "releaseNotesEn": "Admin Creator Growth Studio v1.4.0-admin: (1) AI Self-Review / Quality Critic Loop (Gemini Multimodal 1-10 pre-publish inspection on cards & 3 video frames with DeepSeek/OpenRouter fallback, up to 2 auto-fix retries, and Safety Cap routing to Brain Approval Queue); (2) Zero-Code JSON Dynamic Template Engine for App Video, Reels & Image Cards with live validation, quick picker, and Firebase RTDB sync to Cloud Auto-Pilot; (3) 1-Click Full Admin Studio JSON Backup & Restore (Schema v2 via SAF file picker + immediate Firebase RTDB sync).",
+    "releaseNotesBn": "অ্যাডমিন ক্রিয়েটর গ্রোথ স্টুডিও v1.4.0-admin: (১) AI কোয়ালিটি ক্রিটিক লুপ (পাবলিশের আগে কার্ড ও ভিডিওর ৩টি ফ্রেম Gemini Multimodal দিয়ে ১-১০ রেটিং, কম হলে অটো-ফিক্স রি-রেন্ডার ও সেফটি ক্যাপে অ্যাপ্রুভাল কিউতে পাঠানো); (২) জিরো-কোড JSON ডায়নামিক টেমপ্লেট ইঞ্জিন (অ্যাপ ভিডিও, রিলস ও ইমেজ কার্ডের ডিজাইন JSON দিয়ে তাৎক্ষণিক পরিবর্তন ও Cloud Auto-Pilot-এ Firebase RTDB সিঙ্ক); (৩) ১-ক্লিক ফুল অ্যাডমিন স্টুডিও JSON ব্যাকআপ ও রিস্টোর (সব API কী, AI ব্রেইন মেমরি, কাস্টম টেমপ্লেট ও শিডিউল সহ)।"
   }
 }
