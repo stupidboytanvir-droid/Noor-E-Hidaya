@@ -8,10 +8,10 @@
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.4.0-admin",
-    "versionCode": 25,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.4.0-admin/Noor-e-Hidayah-v1.4.0-admin.apk",
-    "releaseNotesEn": "Admin Creator Growth Studio v1.4.0-admin: (1) AI Self-Review / Quality Critic Loop (Gemini Multimodal 1-10 pre-publish inspection on cards & 3 video frames with DeepSeek/OpenRouter fallback, up to 2 auto-fix retries, and Safety Cap routing to Brain Approval Queue); (2) Zero-Code JSON Dynamic Template Engine for App Video, Reels & Image Cards with live validation, quick picker, and Firebase RTDB sync to Cloud Auto-Pilot; (3) 1-Click Full Admin Studio JSON Backup & Restore (Schema v2 via SAF file picker + immediate Firebase RTDB sync).",
-    "releaseNotesBn": "অ্যাডমিন ক্রিয়েটর গ্রোথ স্টুডিও v1.4.0-admin: (১) AI কোয়ালিটি ক্রিটিক লুপ (পাবলিশের আগে কার্ড ও ভিডিওর ৩টি ফ্রেম Gemini Multimodal দিয়ে ১-১০ রেটিং, কম হলে অটো-ফিক্স রি-রেন্ডার ও সেফটি ক্যাপে অ্যাপ্রুভাল কিউতে পাঠানো); (২) জিরো-কোড JSON ডায়নামিক টেমপ্লেট ইঞ্জিন (অ্যাপ ভিডিও, রিলস ও ইমেজ কার্ডের ডিজাইন JSON দিয়ে তাৎক্ষণিক পরিবর্তন ও Cloud Auto-Pilot-এ Firebase RTDB সিঙ্ক); (৩) ১-ক্লিক ফুল অ্যাডমিন স্টুডিও JSON ব্যাকআপ ও রিস্টোর (সব API কী, AI ব্রেইন মেমরি, কাস্টম টেমপ্লেট ও শিডিউল সহ)।"
+    "versionName": "1.5.0-admin",
+    "versionCode": 26,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.5.0-admin/Noor-e-Hidayah-v1.5.0-admin.apk",
+    "releaseNotesEn": "Admin Studio v1.5.0: Critical Facebook Pre-Publish Sanitizer & Critic-note isolation, duplicate workflow cleanup, Universal Auto-Detect AI Key Manager (Gemini/OpenAI/Claude/DeepSeek/Grok/Groq/OpenRouter), Brain Smart Audio Director with cross-studio anti-duplicate lock, Brain Image & Carousel Director (platform sizing & dynamic palettes), and Separated FB/TG/TikTok Schedules with 1-tap TikTok Publish Queue.",
+    "releaseNotesBn": "অ্যাডমিন স্টুডিও v1.5.0: ফেসবুক প্রি-পাবলিশ স্যানিটাইজার ও ক্রিটিক নোট আইসোলেশন, ডুপ্লিকেট ওয়ার্কফ্লো রিমুভ, ইউনিভার্সাল অটো-ডিটেক্ট AI কী ম্যানেজার, ক্রস-স্টুডিও ইউনিক অডিও ডিরেক্টর, প্ল্যাটফর্ম-ভিত্তিক ইমেজ/ক্যারোসেল ও ডায়নামিক থিম ডিরেক্টর এবং ফেসবুক, টেলিগ্রাম ও টিকটকের আলাদা শিডিউলসহ ১-ট্যাপ টিকটক পাবলিশ কিউ।"
   }
 }
