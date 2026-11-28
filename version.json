@@ -8,10 +8,10 @@
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.2.2-admin",
-    "versionCode": 21,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.2.2-admin/Noor-e-Hidayah-v1.2.2-admin.apk",
-    "releaseNotesEn": "Guaranteed daily 4+ auto-rendered Reels Vault queue with 1-tap FB/TikTok/Share & pre-generated captions/hashtags, Infinite Auto-Mood Deep Reflection visuals, auto-advance topic after render, Telegram Silent Delivery, 2-way bot commands, and Crash Logger.",
-    "releaseNotesBn": "প্রতিদিন ৪+ অটো-রেন্ডার্ড রিলস ভল্ট কিউ (রেডি ক্যাপশন ও হ্যাশট্যাগসহ ১-ট্যাপ শেয়ার), আত্মশুদ্ধির আনলিমিটেড Auto-Mood ব্যাকগ্রাউন্ড, রেন্ডারের পর অটো টপিক চেঞ্জ, টেলিগ্রাম সাইলেন্ট পোস্ট, ২-ওয়ে বট কমান্ড এবং ক্র্যাশ লগার।"
+    "versionName": "1.2.3-admin",
+    "versionCode": 22,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.2.3-admin/Noor-e-Hidayah-v1.2.3-admin.apk",
+    "releaseNotesEn": "Universal 6-Layer Modular Video Editing Engine across App Promo, Deep Reflection & Custom Reels (real 9:16 HD stock backdrops, 6 color grades, overlays, layouts, text animations & transitions), dedicated render buttons, and instant Change Edit Style & Next/Skip controls.",
+    "releaseNotesBn": "অ্যাপ প্রোমো, আত্মশুদ্ধি ও কাস্টম—সব মোডে ৬-লেয়ার মডুলার ভিডিও এডিটিং ইঞ্জিন (রিয়েল HD স্টক ব্যাকগ্রাউন্ড, ৬ রকম কালার গ্রেড, ওভারলে, লেআউট, টেক্সট অ্যানিমেশন ও ট্রানজিশন), আলাদা ৩টি রেন্ডার বাটন এবং রেন্ডার না করেই স্টাইল ও টপিক বদলানোর সুবিধা।"
   }
 }
