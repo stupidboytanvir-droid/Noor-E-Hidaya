@@ -8,10 +8,10 @@
     "mandatoryAfterDismissals": 3
   },
   "adminRelease": {
-    "versionName": "1.3.0-admin",
-    "versionCode": 23,
-    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.3.0-admin/Noor-e-Hidayah-v1.3.0-admin.apk",
-    "releaseNotesEn": "Major Admin Studio Upgrade (Phase 1 & 2): FileProvider crash fix, Top-Level Settings with Gemini + OpenRouter Triple Fallback, separated App Video Studio & Reels Studio with Dual Vaults & Save to Gallery, Audio-Synced Glowing Video Engine with 9:16 Safe Zone, Live Facebook Analytics, Modular AI Brain Hub (Memory, Master Instructions, Auto First-Comment), and Switchable Phone-to-Cloud Failover.",
-    "releaseNotesBn": "অ্যাডমিন স্টুডিও মেজর আপগ্রেড: ক্র্যাশ ফিক্স, টপ সেটিংস ও Gemini + OpenRouter ট্রিপল ফলব্যাক, আলাদা App Video ও Reels স্টুডিও এবং ২টি ভোল্ট (Save to Gallery সহ), অডিও-সিঙ্কড গ্লোয়িং ভিডিও ইঞ্জিন, লাইভ Facebook অ্যানালিটিক্স, AI Brain Hub (মেমোরি ও অটো ফার্স্ট-কমেন্ট) এবং সুইচেবল ফোন-টু-ক্লাউড অটো-পাইলট।"
+    "versionName": "1.3.1-admin",
+    "versionCode": 24,
+    "apkUrl": "https://github.com/stupidboytanvir-droid/Noor-E-Hidaya/releases/download/v1.3.1-admin/Noor-e-Hidayah-v1.3.1-admin.apk",
+    "releaseNotesEn": "Admin Studio v1.3.1: Zero-config key-only AI setup with automatic Gemini (gemini-flash-latest via X-goog-api-key) -> DeepSeek -> OpenRouter routing (App & Cloud), fixed symmetric 9:16 centered video safe zone with upgraded cinematic bokeh/glassmorphism across App Video, Reels & Cloud FFmpeg, and complete Facebook Page Custom Publish Mode (Feed, Reels, Story, Photo/Video/Vault picker, Pin to Top, Auto First-Comment & Schedule).",
+    "releaseNotesBn": "অ্যাডমিন স্টুডিও v1.3.1: জিরো-কনফিগ কি-অনলি অটো-মডেল AI (Gemini -> DeepSeek -> OpenRouter, অ্যাপ ও ক্লাউড), নিখুঁত সেন্টারড 9:16 সেফ-জোনসহ আপগ্রেডেড সিনেমাটিক বোকেহ ও গ্লাসমর্ফিজম ভিডিও ইঞ্জিন, এবং সম্পূর্ণ Facebook Page Custom Publish মোড (Feed, Reels, Story, ছবি/ভিডিও/ভল্ট পিকার, Pin to Top, অটো ফার্স্ট-কমেন্ট ও শিডিউল)।"
   }
 }
